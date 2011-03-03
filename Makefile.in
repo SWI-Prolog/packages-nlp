@@ -30,7 +30,7 @@ PUBLICPL=swipl
 DOCTOTEX=$(PCEHOME)/bin/doc2tex
 PLTOTEX=$(PUBLICPL) -q -s pltotex.pl -g pltotex --
 DOC=nlp
-TEX=$(DOC).tex snowball.tex
+TEX=$(DOC).tex snowball.tex isub.tex
 DVI=$(DOC).dvi
 PDF=$(DOC).pdf
 RUNTEX=../../man/runtex
@@ -44,14 +44,17 @@ INSTALL_DATA=@INSTALL_DATA@
 
 TARGETS=	double_metaphone.@SO@ \
 		porter_stem.@SO@ \
-		snowball.@SO@
+		snowball.@SO@ \
+		isub.@SO@
 LIBPL=		double_metaphone.pl \
 		porter_stem.pl \
-		snowball.pl
+		snowball.pl \
+		isub.pl
 
 DMPOBJ=		double_metaphone.o
 STEMOBJ=	porter_stem.o
 SBOBJ=		snowball.o libstemmer_c/libstemmer.a
+ISUBOBJ=	isub.o pl-isub.o
 
 all:		$(TARGETS)
 
@@ -63,6 +66,9 @@ porter_stem.@SO@:	$(STEMOBJ)
 
 snowball.@SO@:	$(SBOBJ)
 		$(LD) $(LDFLAGS) -o $@ $(SBOBJ)
+
+isub.@SO@:	$(ISUBOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(ISUBOBJ)
 
 ifeq ($(CC),../swipl-ld.sh)
 SUBCC=../$(CC)

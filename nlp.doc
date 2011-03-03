@@ -133,6 +133,8 @@ SWI-Prolog binding.
 
 \input{snowball.tex}
 
+\input{isub.tex}
+
 \section{Installation}
 
 \subsection{Unix systems}

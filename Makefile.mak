@@ -15,16 +15,20 @@ CFLAGS=$(CFLAGS) /D__SWI_PROLOG__
 DMPOBJ=		double_metaphone.obj
 STEMOBJ=	porter_stem.obj
 SBOBJ=		snowball.obj
+ISUBOBJ=	isub.obj pl-isub.obj
 SBLIB=		libstemmer_c\libstemmer.lib
 
-all:		double_metaphone.dll porter_stem.dll snowball.dll
+all:		double_metaphone.dll porter_stem.dll snowball.dll \
+		isub.dll
 
 double_metaphone.dll:	$(DMPOBJ)
 		$(LD) /dll /out:$@ $(LDFLAGS) $(DMPOBJ) $(PLLIB)
 porter_stem.dll:	$(STEMOBJ)
 		$(LD) /dll /out:$@ $(LDFLAGS) $(STEMOBJ) $(PLLIB) $(LIBS)
-snowball.dll:		$(SBOBJ) $(SBLIB)
+snowball.dll:	$(SBOBJ) $(SBLIB)
 		$(LD) /dll /out:$@ $(LDFLAGS) $(SBOBJ) $(PLLIB) $(SBLIB) $(LIBS)
+isub.dll:	$(ISUBOBJ)
+		$(LD) /dll /out:$@ $(LDFLAGS) $(ISUBOBJ) $(PLLIB) $(LIBS)
 
 $(SBLIB):
 		chdir libstemmer_c & $(MAKE)
