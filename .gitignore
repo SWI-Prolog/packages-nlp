@@ -29,6 +29,7 @@ config.h.in
 config.status
 configure
 snowball.tex
+isub.tex
 nlp.tex
 nlp.html
 nlp.pdf
