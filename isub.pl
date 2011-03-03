@@ -52,7 +52,12 @@ on the length of common substrings.
 %	  D = 0.711348.
 %	  ==
 %
-%	@param  Normalize is a boolean.  It true, Text1 and Text2 are
-%		mapped to lowercase and the characters "._ " are removed.
+%	If Normalize is =true=, isub/4   applies string normalization as
+%	implemented by the original authors: Text1  and Text2 are mapped
+%	to lowercase and the characters  "._   "  are removed. Lowercase
+%	mapping is done  with  the   C-library  function  towlower(). In
+%	general, the required normalization is   domain dependent and is
+%	better left to the caller.  See e.g., unaccent_atom/2.
+%
 %	@param	Similarity is a float in the range [0.0..1.0], where 1.0
 %		means _|most similar|_
