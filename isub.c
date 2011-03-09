@@ -115,8 +115,8 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
   }
 
   common_prefix_len = common_prefix_length(s1, s2);
-  l1 = wcslen(s1);	// length of s
-  l2 = wcslen(s2);	// length of t
+  l1 = (int)wcslen(s1);	// length of s
+  l2 = (int)wcslen(s2);	// length of t
   L1 = l1;
   L2 = l2;
   if ((L1 == 0) && (L2 == 0))
@@ -185,6 +185,7 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
     double rest2 = (double)L2 - common;
     double unmatchedS1 = rest1 / (double)L1;
     double unmatchedS2 = rest2 / (double)L2;
+    double result;
 
 		/**
 		 * Hamacher Product
@@ -202,7 +203,7 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
       dissimilarity = (product) / (p + (1 - p) * (suma - product));
 
     // Modification JE: returned normalization (instead of [-1 1])
-    double result = commonality - dissimilarity + winklerImprovementVal;
+    result = commonality - dissimilarity + winklerImprovementVal;
 
     return (result + 1) / 2;
   }

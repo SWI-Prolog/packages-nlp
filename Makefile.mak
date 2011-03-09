@@ -53,25 +53,30 @@ idll::
 		copy double_metaphone.dll "$(BINDIR)"
 		copy porter_stem.dll "$(BINDIR)"
 		copy snowball.dll "$(BINDIR)"
+		copy isub.dll "$(BINDIR)"
 !IF "$(PDB)" == "true"
 		copy double_metaphone.pdb "$(BINDIR)"
 		copy porter_stem.pdb "$(BINDIR)"
 		copy snowball.pdb "$(BINDIR)"
+		copy isub.pdb "$(BINDIR)"
 !ENDIF
 
 ilib::
 		copy double_metaphone.pl "$(PLBASE)\library"
 		copy porter_stem.pl "$(PLBASE)\library"
 		copy snowball.pl "$(PLBASE)\library"
+		copy isub.pl "$(PLBASE)\library"
 		$(MAKEINDEX)
 
 uninstall::
 		del "$(BINDIR)\double_metaphone.dll"
 		del "$(BINDIR)\porter_stem.dll"
 		del "$(BINDIR)\snowball.dll"
+		del "$(BINDIR)\isub.dll"
 		del "$(PLBASE)\library\double_metaphone.pl"
 		del "$(PLBASE)\library\porter_stem.pl"
 		del "$(PLBASE)\library\snowball.pl"
+		del "$(PLBASE)\library\isub.pl"
 		$(MAKEINDEX)
 
 html-install::
