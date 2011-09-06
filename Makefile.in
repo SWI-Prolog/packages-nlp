@@ -22,7 +22,7 @@ CC=@CC@
 COFLAGS=@COFLAGS@
 CWFLAGS=@CWFLAGS@
 CMFLAGS=@CMFLAGS@
-CIFLAGS=
+CIFLAGS=-I.
 CFLAGS=$(COFLAGS) $(CWFLAGS) $(CMFLAGS) $(CIFLAGS) @DEFS@
 LIBS=@LIBS@
 
@@ -59,16 +59,16 @@ ISUBOBJ=	isub.o pl-isub.o
 all:		$(TARGETS)
 
 double_metaphone.@SO@:	$(DMPOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(DMPOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(DMPOBJ) $(LIBS)
 
 porter_stem.@SO@:	$(STEMOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(STEMOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(STEMOBJ) $(LIBS)
 
 snowball.@SO@:	$(SBOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(SBOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(SBOBJ) $(LIBS)
 
 isub.@SO@:	$(ISUBOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(ISUBOBJ)
+		$(LD) $(LDFLAGS) -o $@ $(ISUBOBJ) $(LIBS)
 
 ifeq ($(CC),../swipl-ld.sh)
 SUBCC=../$(CC)
