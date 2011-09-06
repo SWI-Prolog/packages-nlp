@@ -6,18 +6,6 @@ AC_CONFIG_HEADER(config.h)
 
 m4_include([../ac_swi_c.m4])
 
-case "$PLARCH" in
-    i386-win32|x64-win64)
-        AC_CHECK_LIB(pthreadGC2, pthread_create)
-        if test ! "$ac_cv_lib_pthreadGC2_pthread_create" = "yes"; then
-          AC_CHECK_LIB(pthreadGC, pthread_create)
-          if test ! "$ac_cv_lib_pthreadGC_pthread_create" = "yes"; then
-            AC_CHECK_LIB(pthread, pthread_create)
-          fi
-        fi
-        ;;
-esac
-
 AC_OUTPUT(Makefile)
 
 
