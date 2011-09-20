@@ -5,6 +5,7 @@ all: libstemmer.a
 
 libstemmer.a: $(snowball_sources:.c=.o)
 	$(AR) -cru $@ $^
+	$(RANLIB) $@
 stemwords: examples/stemwords.o libstemmer.a
 	$(CC) $(CFLAGS) -o $@ $^
 

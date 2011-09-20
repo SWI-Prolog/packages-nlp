@@ -1,5 +1,5 @@
 ################################################################
-# Makefile template for SWI-Prolog CLIB package
+# Makefile template for SWI-Prolog NLP package
 #
 # This template is used by configure to create Makefile.  See
 # the file INSTALL for further installation instructions.
@@ -9,40 +9,11 @@
 # Author: Jan Wielemaker (wielemak@science.uva.nl)
 ################################################################
 
-.SUFFIXES: .tex .dvi .doc .pl
-
-PL=@PL@
-PLBASE=@PLBASE@
-PLARCH=@PLARCH@
-PLINCL=@PLINCL@
-PKGDOC=$(PLBASE)/doc/packages
-PCEHOME=../xpce
-SOLIB=@SOLIB@
-
-CC=@CC@
-COFLAGS=@COFLAGS@
-CWFLAGS=@CWFLAGS@
-CMFLAGS=@CMFLAGS@
-CIFLAGS=-I.
-CFLAGS=$(COFLAGS) $(CWFLAGS) $(CMFLAGS) $(CIFLAGS) @DEFS@
-LIBS=@LIBS@
-
-PUBLICPL=swipl
-DOCTOTEX=$(PCEHOME)/bin/doc2tex
-PLTOTEX=$(PUBLICPL) -q -s pltotex.pl -g pltotex --
+PACKAGE=nlp
 DOC=nlp
-TEX=$(DOC).tex snowball.tex isub.tex
-DVI=$(DOC).dvi
-PDF=$(DOC).pdf
-RUNTEX=../../man/runtex
-
-LD=@LD@
-LDFLAGS=@LDSOFLAGS@
-
-INSTALL=@INSTALL@
-INSTALL_PROGRAM=@INSTALL_PROGRAM@
-INSTALL_DATA=@INSTALL_DATA@
-INSTALL_PLARCH=@INSTALL_PLARCH@
+include ../Makefile.defs
+# Need this because MinGW pthread.h includes config.h ...
+CFLAGS+= -I.
 
 TARGETS=	double_metaphone.@SO@ \
 		porter_stem.@SO@ \
@@ -61,16 +32,16 @@ ISUBOBJ=	isub.o pl-isub.o
 all:		$(TARGETS)
 
 double_metaphone.@SO@:	$(DMPOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(DMPOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(DMPOBJ) @LIBS@
 
 porter_stem.@SO@:	$(STEMOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(STEMOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(STEMOBJ) @LIBS@
 
 snowball.@SO@:	$(SBOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(SBOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(SBOBJ) @LIBS@
 
 isub.@SO@:	$(ISUBOBJ)
-		$(LD) $(LDFLAGS) -o $@ $(ISUBOBJ) $(LIBS)
+		$(LD) $(LDSOFLAGS) -o $@ $(ISUBOBJ) @LIBS@
 
 ifeq ($(CC),../swipl-ld.sh)
 SUBCC=../$(CC)
@@ -79,7 +50,7 @@ SUBCC=$(CC)
 endif
 
 libstemmer_c/libstemmer.a:
-		$(MAKE) CFLAGS="$(CFLAGS)" CC="$(SUBCC)" \
+		$(MAKE) CFLAGS="$(CFLAGS)" CC="$(SUBCC)" RANLIB=$(RANLIB)\
 			-C libstemmer_c -f Makefile.pl
 
 install:	$(TARGETS) $(LIBPL)
@@ -91,7 +62,7 @@ install:	$(TARGETS) $(LIBPL)
 		for f in $(LIBPL); do \
 		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLBASE)/library; \
 		done
-		$(PL) -f none -g make -t halt
+		$(MKINDEX)
 
 ln-install::
 		$(MAKE) INSTALL_DATA="../ln-install" INSTALL_PROGRAM="../ln-install" install
@@ -117,30 +88,6 @@ uninstall::
 
 check::
 		$(PL) -q -f test.pl -g true -t run_tests
-
-################################################################
-# Documentation
-################################################################
-
-pdf:		$(PDF)
-
-$(DVI):		$(TEX)
-		$(RUNTEX) $(DOC)
-
-$(PDF):		$(TEX)
-		$(RUNTEX) --pdf $(DOC)
-
-html:		$(TEX)
-		latex2html $(DOC)
-		mv html/index.html $(DOC).html
-		rm -r html
-
-$(TEX):		$(DOCTOTEX)
-
-.doc.tex:
-		$(DOCTOTEX) $*.doc > $*.tex
-.pl.tex:
-		$(PLTOTEX) $*.pl > $*.tex
 
 ################################################################
 # Clean
