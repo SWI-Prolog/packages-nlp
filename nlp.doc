@@ -6,8 +6,8 @@
 \makeindex
 
 \onefile
-\htmloutput{html}				% Output directory
-\htmlmainfile{index}				% Main document file
+\htmloutput{.}					% Output directory
+\htmlmainfile{nlp}				% Main document file
 \bodycolor{white}				% Page colour
 
 \begin{document}
