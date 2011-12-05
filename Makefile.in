@@ -58,9 +58,8 @@ install:	$(TARGETS) $(LIBPL)
 		for f in $(TARGETS); do \
 		  $(INSTALL_PROGRAM) $$f $(DESTDIR)$(SOLIBDIR); \
 		done
-		mkdir -p $(DESTDIR)$(PLBASE)/library
 		for f in $(LIBPL); do \
-		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLBASE)/library; \
+		  $(INSTALL_DATA) $$f $(DESTDIR)$(PLLIBDIR); \
 		done
 		$(MKINDEX)
 
