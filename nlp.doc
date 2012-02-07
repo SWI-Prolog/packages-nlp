@@ -14,10 +14,9 @@
 
 \title{SWI-Prolog Natural Language Processing Primitives}
 \author{Jan Wielemaker \\
-	HCS, \\
-	University of Amsterdam \\
+	VU University Amsterdam \\
 	The Netherlands \\
-	E-mail: \email{wielemak@science.uva.nl}}
+	E-mail: \email{J.Wielemaker@cs.vu.nl}}
 
 \maketitle
 

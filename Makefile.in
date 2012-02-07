@@ -82,6 +82,19 @@ uninstall::
 		$(PL) -f none -g make -t halt
 
 ################################################################
+# Documentation
+################################################################
+
+TEXEXTRA=	snowball.tex isub.tex
+$(TEX):		$(TEXEXTRA)
+
+snowball.tex:	snowball.pl
+		$(PLTOTEX) --section 'library(snowball)'
+isub.tex:	isub.pl
+		$(PLTOTEX) --section 'library(isub)'
+
+
+################################################################
 # Testing
 ################################################################
 
