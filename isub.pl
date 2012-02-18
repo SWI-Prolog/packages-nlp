@@ -28,7 +28,7 @@
 	  [ isub/4			% +Text1, +Text2, +Normalize, -Distance
 	  ]).
 
-:- load_foreign_library(foreign(isub)).
+:- use_foreign_library(foreign(isub)).
 
 /** <module> isub: a string similarity measure
 
