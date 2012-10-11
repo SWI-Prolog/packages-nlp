@@ -50,7 +50,7 @@ SUBCC=$(CC)
 endif
 
 libstemmer_c/libstemmer.a:
-		$(MAKE) CFLAGS="$(CFLAGS)" CC="$(SUBCC)" RANLIB=$(RANLIB)\
+		$(MAKE) CFLAGS="$(CFLAGS)" CC="$(SUBCC)" AR=$(AR) RANLIB=$(RANLIB)\
 			-C libstemmer_c -f Makefile.pl
 
 install:	$(TARGETS) $(LIBPL)
