@@ -100,7 +100,6 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
   double common = 0.0;
   size_t common_prefix_len;
   int best = 2;
-  int max;
 
   if ( normaliseStrings )
   { toLowerCase(s1);
@@ -125,7 +124,6 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
     // Modification JE: giorgos put -1 instead of 0
   if ((L1 == 0) || (L2 == 0))
     return 0;
-  max = MIN(l1, l2);	// the maximal length of a subs
 
   while ( l1 > 0 && l2 > 0 && best != 0)
   { int i = 0;			// iterates through s1
