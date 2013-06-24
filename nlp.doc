@@ -36,6 +36,7 @@ misleading.  Suggestions and contributions are welcome.
 \newpage
 
 \section{Double Metaphone -- Phonetic string matching}
+\label{sec:double-metaphone}
 
 The library \pllib{double_metaphone} implements the \emph{Double
 Metaphone} algorithm developed by Lawrence Philips and described in
@@ -58,6 +59,7 @@ are always returned as atoms.
 
 
 \subsection{Origin and Copyright}
+\label{sec:double-metaphone-copyright}
 
 The Double Metaphone algorithm is copied from the Perl library that
 holds the following copyright notice.  To the best of our knowledge
@@ -77,6 +79,7 @@ under the same terms as Perl itself.
 \end{quote}
 
 \section{Porter Stem -- Determine stem and related routines}
+\label{sec:porter-stem}
 
 The \pllib{porter_stem} library implements the stemming algorithm
 described by Porter in Porter, 1980, ``An algorithm for suffix
@@ -122,6 +125,7 @@ numbers.
 
 
 \subsection{Origin and Copyright}
+\label{sec:porter-stem-copyright}
 
 The code is based on the original Public Domain implementation by Martin
 Porter as can be found at
@@ -133,27 +137,6 @@ SWI-Prolog binding.
 \input{snowball.tex}
 
 \input{isub.tex}
-
-\section{Installation}
-
-\subsection{Unix systems}
-
-Installation on Unix system uses the commonly found {\em configure},
-{\em make} and {\em make install} sequence. SWI-Prolog should be
-installed before building this package. If SWI-Prolog is not installed
-as \program{pl}, the environment variable \env{PL} must be set to the
-name of the SWI-Prolog executable. Installation is now accomplished
-using:
-
-\begin{code}
-% ./configure
-% make
-% make install
-\end{code}
-
-This installs the foreign libraries in \file{$PLBASE/lib/$PLARCH} and
-the Prolog library files in \file{$PLBASE/library}, where
-\file{$PLBASE} refers to the SWI-Prolog `home-directory'.
 
 \printindex
 
