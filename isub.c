@@ -40,6 +40,9 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
  * Jérōme Euzenat: added normalization
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 #define _GNU_SOURCE			/* get wcsdup */
 #include <memory.h>
 #include <string.h>
@@ -47,6 +50,23 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
 #include <wchar.h>
 #include <wctype.h>
 #include "isub.h"
+
+#ifdef __sun
+#undef HAVE_WCSDUP
+#endif
+
+#ifndef HAVE_WCSDUP
+static wchar_t *
+my_wcsdup(const wchar_t *in)
+{ wchar_t *copy = malloc((wcslen(in)+1)*sizeof(wchar_t));
+
+  if ( copy )
+    return wcscpy(copy, in);
+
+  return NULL;
+}
+#define wcsdup(ws) my_wcsdup(ws)
+#endif
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))

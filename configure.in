@@ -6,6 +6,8 @@ AC_CONFIG_HEADER(config.h)
 
 m4_include([../ac_swi_c.m4])
 
+AC_CHECK_FUNCS(wcsdup)
+
 AC_OUTPUT(Makefile)
 
 
