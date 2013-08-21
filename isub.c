@@ -51,7 +51,7 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
 #include <wctype.h>
 #include "isub.h"
 
-#ifdef __sun
+#if defined(__sun) || __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070
 #undef HAVE_WCSDUP
 #endif
 
