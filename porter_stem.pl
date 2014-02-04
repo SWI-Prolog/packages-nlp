@@ -37,3 +37,10 @@
 	  ]).
 
 :- use_foreign_library(foreign(porter_stem)).
+
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(porter_stem:porter_stem(_,_)).
+sandbox:safe_primitive(porter_stem:unaccent_atom(_,_)).
+sandbox:safe_primitive(porter_stem:tokenize_atom(_,_)).
+sandbox:safe_primitive(porter_stem:atom_to_stem_list(_,_)).

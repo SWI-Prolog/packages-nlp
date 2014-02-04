@@ -61,3 +61,7 @@ on the length of common substrings.
 %
 %	@param	Similarity is a float in the range [0.0..1.0], where 1.0
 %		means _|most similar|_
+
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(isub:isub(_,_,_,_)).
