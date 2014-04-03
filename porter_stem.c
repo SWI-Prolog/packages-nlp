@@ -650,25 +650,29 @@ unify_tokenA(const char *s, size_t len, toktype type, void *closure)
 { list *l = closure;
 
   if ( PL_unify_list(l->tail, l->head, l->tail) )
-  { char *ep;
-
-    switch(type)
+  { switch(type)
     { case TOK_INT:
-#ifdef __WINDOWS__
-      { long val = strtol(s, &ep, 10);
-
-	return PL_unify_integer(l->head, val);
-      }
-#else
-      { int64_t val = strtoll(s, &ep, 10);
-
-	return PL_unify_int64(l->head, val);
-      }
-#endif
       case TOK_FLOAT:
-      { double val = strtod(s, &ep);
+      { char buf[100];
+	char *a, *o;
+	const char *i;
+	int rc;
 
-	return PL_unify_float(l->head, val);
+	if ( len+1 > sizeof(buf) )
+	{ if ( !(a = malloc(len+1)) )
+	    return PL_resource_error("memory");
+	} else
+	{ a = buf;
+	}
+
+	for(i=s,o=a; len-- > 0; )
+	  *o++ = (char)*i++;
+	*o = '\0';
+
+	rc = PL_chars_to_term(a, l->head);
+	if ( a != buf )
+	  free(a);
+	return rc;
       }
       default:
 	return PL_unify_atom_nchars(l->head, len, s);
@@ -684,25 +688,29 @@ unify_tokenW(const wchar_t *s, size_t len, toktype type, void *closure)
 { list *l = closure;
 
   if ( PL_unify_list(l->tail, l->head, l->tail) )
-  { wchar_t *ep;
-
-    switch(type)
+  { switch(type)
     { case TOK_INT:
-#ifdef __WINDOWS__
-      { long val = wcstol(s, &ep, 10);
-
-	return PL_unify_integer(l->head, val);
-      }
-#else
-      { int64_t val = wcstoll(s, &ep, 10);
-
-	return PL_unify_int64(l->head, val);
-      }
-#endif
       case TOK_FLOAT:
-      { double val = wcstod(s, &ep);
+      { char buf[100];
+	char *a, *o;
+	const wchar_t *i;
+	int rc;
 
-	return PL_unify_float(l->head, val);
+	if ( len+1 > sizeof(buf) )
+	{ if ( !(a = malloc(len+1)) )
+	    return PL_resource_error("memory");
+	} else
+	{ a = buf;
+	}
+
+	for(i=s,o=a; len-- > 0; )
+	  *o++ = (char)*i++;
+	*o = '\0';
+
+	rc = PL_chars_to_term(a, l->head);
+	if ( a != buf )
+	  free(a);
+	return rc;
       }
       default:
 	return PL_unify_wchars(l->head, PL_ATOM, len, s);
