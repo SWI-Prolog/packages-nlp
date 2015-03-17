@@ -33,6 +33,7 @@
 	  [ double_metaphone/2,		% +In, -Primary
 	    double_metaphone/3		% +In, -Primary, -Secondary
 	  ]).
+:- use_module(library(sandbox)).
 
 :- use_foreign_library(foreign(double_metaphone)).
 
@@ -76,3 +77,8 @@ therefore including this module poses no additional license conditions.
 %	common alternative pronounciation in  other   languages.  In  is
 %	either and atom, string object,  code-   or  character list. The
 %	metaphones are always returned as atoms.
+
+:- multifile sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(double_metaphone:double_metaphone(_,_)).
+sandbox:safe_primitive(double_metaphone:double_metaphone(_,_,_)).

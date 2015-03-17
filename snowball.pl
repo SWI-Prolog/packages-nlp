@@ -1,9 +1,9 @@
 /*  Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@uva.nl
+    E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2010, VU University, Amsterdam
+    Copyright (C): 2010-2015, VU University, Amsterdam
 
     This program is free software; you can redistribute it and/or
     modify it under the terms of the GNU General Public License
@@ -32,6 +32,7 @@
 	  [ snowball/3,			 % +Algorithm, +In, -Out
 	    snowball_current_algorithm/1 % ?algorithm
 	  ]).
+:- use_module(library(sandbox)).
 
 /** <module> The Snowball multi-lingual stemmer library
 
@@ -85,3 +86,8 @@ term_expansion(snowball_current_algorithm(dummy), Clauses) :-
 wrap(X, snowball_current_algorithm(X)).
 
 snowball_current_algorithm(dummy).
+
+:- multifile
+	sandbox:safe_primitive/1.
+
+sandbox:safe_primitive(snowball:snowball(_,_,_)).
