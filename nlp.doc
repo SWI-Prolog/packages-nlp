@@ -110,8 +110,9 @@ Tokens are created to the following rules:
 anything else					& single-character
 \end{tabular}
 
-Character classification is based on the C-library iswalnum()
-etc.\ functions.
+Character classification is based on the C-library iswalnum() etc.\
+functions. Recognised numbers are passed to Prolog read/1, supporting
+unbounded integers.
 
 It is likely that future versions of this library will provide
 tokenize_atom/3 with additional options to modify space handling as
