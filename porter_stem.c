@@ -505,6 +505,7 @@ typedef enum
   TOK_UNKNOWN
 } toktype;
 
+#undef isdigit
 #define issign(c) ((c) == '-' || (c) == '+' )
 #define isdigit(c) ((c) >= '0' && (c) <= '9')
 
@@ -711,7 +712,9 @@ unify_tokenW(const wchar_t *s, size_t len, toktype type, void *closure)
 	  *o++ = (char)*i++;
 	*o = '\0';
 
-	rc = PL_chars_to_term(a, l->head);
+	rc = ( PL_chars_to_term(a, l->tmp) &&
+	       PL_unify(l->head, l->tmp)
+	     );
 	if ( a != buf )
 	  free(a);
 	return rc;
@@ -801,6 +804,7 @@ pl_atom_to_stem_list(term_t text, term_t stems)
 
   l.tail = PL_copy_term_ref(stems);
   l.head = PL_new_term_ref();
+  l.tmp  = PL_new_term_ref();
 
   if ( !tokenizeA(s, len, unify_stem, &l) )
     return FALSE;
