@@ -642,6 +642,7 @@ tokenizeW(const wchar_t *in, size_t len,
 typedef struct
 { term_t head;
   term_t tail;
+  term_t tmp;
 } list;
 
 
@@ -669,7 +670,9 @@ unify_tokenA(const char *s, size_t len, toktype type, void *closure)
 	  *o++ = (char)*i++;
 	*o = '\0';
 
-	rc = PL_chars_to_term(a, l->head);
+	rc = ( PL_chars_to_term(a, l->tmp) &&
+	       PL_unify(l->head, l->tmp)
+	     );
 	if ( a != buf )
 	  free(a);
 	return rc;
@@ -731,6 +734,7 @@ pl_tokenize(term_t text, term_t tokens)
 
   l.tail = PL_copy_term_ref(tokens);
   l.head = PL_new_term_ref();
+  l.tmp  = PL_new_term_ref();
 
   if ( PL_get_nchars(text, &len, &s, CVT_ALL) )
   { if ( !tokenizeA(s, len, unify_tokenA, &l) )
