@@ -505,7 +505,8 @@ typedef enum
   TOK_UNKNOWN
 } toktype;
 
-#define issign(c) ((c) == '-' || (c) =='+' )
+#define issign(c) ((c) == '-' || (c) == '+' )
+#define isdigit(c) ((c) >= '0' && (c) <= '9')
 
 static int
 tokenizeA(const char *in, size_t len,
@@ -529,29 +530,29 @@ tokenizeA(const char *in, size_t len,
     st = s;
     type = TOK_UNKNOWN;
 
-    if ( issign(*s) && se-s > 1 && iswdigit(s[1]) )
+    if ( issign(*s) && se-s > 1 && isdigit(s[1]) )
     { s += 2;
       type = TOK_INT;
-    } else if ( iswdigit(*s) )
+    } else if ( isdigit(*s) )
     { s++;
       type = TOK_INT;
     }
 
     if ( type == TOK_INT )
-    { while(s<se && iswdigit(*s))
+    { while(s<se && isdigit(*s))
 	s++;
-      if ( s+2 <= se && *s == '.' && iswdigit(s[1]) )
+      if ( s+2 <= se && *s == '.' && isdigit(s[1]) )
       { s += 2;
 	type = TOK_FLOAT;
-	while(s<se && iswdigit(*s))
+	while(s<se && isdigit(*s))
 	  s++;
       }
       if ( s+2 <= se &&
 	   (*s == 'e' || *s == 'E') &&
-	   (iswdigit(s[1]) || (s+3 <= se && issign(s[1]) && iswdigit(s[2]))) )
+	   (isdigit(s[1]) || (s+3 <= se && issign(s[1]) && isdigit(s[2]))) )
       { s += 2;
 	type = TOK_FLOAT;
-	while(s<se && iswdigit(*s))
+	while(s<se && isdigit(*s))
 	  s++;
       }
 
@@ -595,29 +596,29 @@ tokenizeW(const wchar_t *in, size_t len,
     st = s;
     type = TOK_UNKNOWN;
 
-    if ( issign(*s) && se-s > 1 && iswdigit(s[1]) )
+    if ( issign(*s) && se-s > 1 && isdigit(s[1]) )
     { s += 2;
       type = TOK_INT;
-    } else if ( iswdigit(*s) )
+    } else if ( isdigit(*s) )
     { s++;
       type = TOK_INT;
     }
 
     if ( type == TOK_INT )
-    { while(s<se && iswdigit(*s))
+    { while(s<se && isdigit(*s))
 	s++;
-      if ( s+2 <= se && *s == '.' && iswdigit(s[1]) )
+      if ( s+2 <= se && *s == '.' && isdigit(s[1]) )
       { s += 2;
 	type = TOK_FLOAT;
-	while(s<se && iswdigit(*s))
+	while(s<se && isdigit(*s))
 	  s++;
       }
       if ( s+2 <= se &&
 	   (*s == 'e' || *s == 'E') &&
-	   (iswdigit(s[1]) || (s+3 <= se && issign(s[1]) && iswdigit(s[2]))) )
+	   (isdigit(s[1]) || (s+3 <= se && issign(s[1]) && isdigit(s[2]))) )
       { s += 2;
 	type = TOK_FLOAT;
-	while(s<se && iswdigit(*s))
+	while(s<se && isdigit(*s))
 	  s++;
       }
 
