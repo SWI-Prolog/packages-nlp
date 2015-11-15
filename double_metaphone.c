@@ -29,6 +29,7 @@ COPYRIGHT
 #include "double_metaphone.h"
 
 #ifdef __SWI_PROLOG__
+#include <config.h>
 #include <SWI-Prolog.h>
 #endif
 

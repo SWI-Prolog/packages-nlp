@@ -40,9 +40,7 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
  * Jérōme Euzenat: added normalization
  */
 
-#ifdef HAVE_CONFIG_H
 #include <config.h>
-#endif
 #define _GNU_SOURCE			/* get wcsdup */
 #include <memory.h>
 #include <string.h>

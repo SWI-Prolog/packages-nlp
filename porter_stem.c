@@ -26,6 +26,7 @@
    Release 1
 */
 
+#include <config.h>
 #include <SWI-Prolog.h>
 
 #include <stdio.h>
