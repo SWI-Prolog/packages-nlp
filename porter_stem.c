@@ -78,7 +78,8 @@ m(vars *vs)
    int i = vs->k0;
    while(TRUE)
    {  if (i > vs->j) return n;
-      if (! cons(i, vs)) break; i++;
+      if (! cons(i, vs)) break;
+      i++;
    }
    i++;
    while(TRUE)
@@ -293,24 +294,37 @@ static void step4(vars *vs)
   switch (vs->b[vs->k-1])
     {  case 'a': if (ends("\02" "al", vs)) break; return;
        case 'c': if (ends("\04" "ance", vs)) break;
-                 if (ends("\04" "ence", vs)) break; return;
-       case 'e': if (ends("\02" "er", vs)) break; return;
-       case 'i': if (ends("\02" "ic", vs)) break; return;
+                 if (ends("\04" "ence", vs)) break;
+		 return;
+       case 'e': if (ends("\02" "er", vs)) break;
+		 return;
+       case 'i': if (ends("\02" "ic", vs)) break;
+		 return;
        case 'l': if (ends("\04" "able", vs)) break;
-                 if (ends("\04" "ible", vs)) break; return;
+                 if (ends("\04" "ible", vs)) break;
+		 return;
        case 'n': if (ends("\03" "ant", vs)) break;
                  if (ends("\05" "ement", vs)) break;
                  if (ends("\04" "ment", vs)) break;
-                 if (ends("\03" "ent", vs)) break; return;
-       case 'o': if (ends("\03" "ion", vs) && vs->j > 0 && (vs->b[vs->j] == 's' || vs->b[vs->j] == 't')) break;
-                 if (ends("\02" "ou", vs)) break; return;
+                 if (ends("\03" "ent", vs)) break;
+		 return;
+       case 'o': if (ends("\03" "ion", vs) && vs->j > 0 &&
+		     (vs->b[vs->j] == 's' || vs->b[vs->j] == 't'))
+		   break;
+                 if (ends("\02" "ou", vs)) break;
+		 return;
                  /* takes care of -ous */
-       case 's': if (ends("\03" "ism", vs)) break; return;
+       case 's': if (ends("\03" "ism", vs)) break;
+		 return;
        case 't': if (ends("\03" "ate", vs)) break;
-                 if (ends("\03" "iti", vs)) break; return;
-       case 'u': if (ends("\03" "ous", vs)) break; return;
-       case 'v': if (ends("\03" "ive", vs)) break; return;
-       case 'z': if (ends("\03" "ize", vs)) break; return;
+                 if (ends("\03" "iti", vs)) break;
+		 return;
+       case 'u': if (ends("\03" "ous", vs)) break;
+		 return;
+       case 'v': if (ends("\03" "ive", vs)) break;
+		 return;
+       case 'z': if (ends("\03" "ize", vs)) break;
+		 return;
        default: return;
     }
     if (m(vs) > 1) vs->k = vs->j;
