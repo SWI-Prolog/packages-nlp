@@ -1,23 +1,35 @@
 /*  Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@cs.vu.nl
+    E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (C): 2010, VU University, Amsterdam
+    Copyright (c)  2010-2016, VU University Amsterdam
+    All rights reserved.
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Lesser General Public
-    License as published by the Free Software Foundation; either
-    version 2.1 of the License, or (at your option) any later version.
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Lesser General Public License for more details.
+    1. Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
 
-    You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+    2. Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in
+       the documentation and/or other materials provided with the
+       distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+    INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+    BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+    LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+    ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+    POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <config.h>
@@ -29,69 +41,16 @@
 #include <assert.h>
 #include <errno.h>
 
-#define CACHE_SIZE (20)			/* cache CACHE_SIZE languages */
+#define STEMMER_BUCKETS (32)		/* cache CACHE_SIZE languages */
 
-static functor_t FUNCTOR_error2;	/* error(Formal, Context) */
-static functor_t FUNCTOR_type_error2;	/* type_error(Term, Expected) */
-static functor_t FUNCTOR_domain_error2;	/* domain_error(Term, Expected) */
-
-static int
-type_error(const char *expected, term_t actual)
-{ term_t ex;
-
-  if ( (ex = PL_new_term_ref()) &&
-       PL_unify_term(ex,
-		     PL_FUNCTOR, FUNCTOR_error2,
-		       PL_FUNCTOR, FUNCTOR_type_error2,
-		         PL_CHARS, expected,
-		         PL_TERM, actual,
-		       PL_VARIABLE) )
-    return PL_raise_exception(ex);
-
-  return FALSE;
-}
-
-
-static int
-domain_error(const char *domain, term_t actual)
-{ term_t ex;
-
-  if ( (ex = PL_new_term_ref()) &&
-       PL_unify_term(ex,
-		     PL_FUNCTOR, FUNCTOR_error2,
-		       PL_FUNCTOR, FUNCTOR_domain_error2,
-		         PL_CHARS, domain,
-		         PL_TERM, actual,
-		       PL_VARIABLE) )
-  return PL_raise_exception(ex);
-
-  return FALSE;
-}
-
-
-static int
-resource_error(const char *res)
-{ term_t ex;
-
-  if ( (ex = PL_new_term_ref()) &&
-       PL_unify_term(ex,
-		     PL_FUNCTOR, FUNCTOR_error2,
-		       PL_CHARS, "resource_error",
-		       PL_CHARS, res) )
-    return PL_raise_exception(ex);
-
-  return FALSE;
-}
-
-
-
-typedef struct
+typedef struct stemmer
 { atom_t		language;
+  struct stemmer       *next;
   struct sb_stemmer    *stemmer;
 } stemmer;
 
 typedef struct
-{ stemmer	stemmers[CACHE_SIZE];
+{ stemmer	*stemmers[STEMMER_BUCKETS];
 } stem_cache;
 
 static pthread_key_t stem_key;
@@ -104,10 +63,16 @@ stem_destroy_cache(void *buf)
 { stem_cache *cache = buf;
   int i;
 
-  for(i=0; i<CACHE_SIZE; i++)
-  { if ( cache->stemmers[i].stemmer )
-    { PL_unregister_atom(cache->stemmers[i].language);
-      sb_stemmer_delete(cache->stemmers[i].stemmer);
+  for(i=0; i<STEMMER_BUCKETS; i++)
+  { stemmer *s = cache->stemmers[i];
+    stemmer *n;
+
+    for( ; s; s = n)
+    { n = s->next;
+
+      PL_unregister_atom(s->language);
+      sb_stemmer_delete(s->stemmer);
+      PL_free(s);
     }
   }
 
@@ -138,43 +103,43 @@ get_cache(void)
 }
 
 
+#define ATOM_HASH(a) ((unsigned int)(a>>7) & (STEMMER_BUCKETS-1))
+
 static int
-get_lang_stemmer(term_t t, struct sb_stemmer **stemmer)
+get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
 { stem_cache *cache = get_cache();
   atom_t lang;
-  int i;
+  int k;
+  stemmer *s;
+  struct sb_stemmer *st;
 
   if ( !PL_get_atom(t, &lang) )
-    return type_error("atom", t);
+    return PL_type_error("atom", t);
 
-  for(i=0; i<CACHE_SIZE; i++)
-  { if ( cache->stemmers[i].language == lang )
-    { *stemmer = cache->stemmers[i].stemmer;
-      return TRUE;
-    }
-  }
-  for(i=0; i<CACHE_SIZE; i++)
-  { if ( !cache->stemmers[i].stemmer )
-    { struct sb_stemmer *st;
-
-      if ( !(st= sb_stemmer_new(PL_atom_chars(lang), NULL)) )
-      { if ( errno == ENOMEM )
-	  return resource_error("memory");
-	else
-	  return domain_error("snowball_algorithm", t);
-      }
-
-      cache->stemmers[i].language = lang;
-      cache->stemmers[i].stemmer  = st;
-      PL_register_atom(cache->stemmers[i].language);
-
-      *stemmer = cache->stemmers[i].stemmer;
+  k = ATOM_HASH(lang);
+  for(s=cache->stemmers[k]; s; s=s->next)
+  { if ( s->language == lang )
+    { *stemmerp = s->stemmer;
       return TRUE;
     }
   }
 
-  assert(0);				/* TBD: clean cache */
-  return FALSE;
+  if ( !(st=sb_stemmer_new(PL_atom_chars(lang), NULL)) )
+  { if ( errno == ENOMEM )
+      return PL_resource_error("memory");
+    else
+      return PL_domain_error("snowball_algorithm", t);
+  }
+
+  s = PL_malloc(sizeof(*s));
+  s->language = lang;
+  s->stemmer = st;
+
+  s->next = cache->stemmers[k];
+  cache->stemmers[k] = s;
+
+  *stemmerp = st;
+  return TRUE;
 }
 
 
@@ -192,7 +157,7 @@ snowball(term_t lang, term_t in, term_t out)
     return FALSE;
 
   if ( !(stemmed = sb_stemmer_stem(stemmer, (const sb_symbol*)s, (int)len)) )
-    return resource_error("memory");
+    return PL_resource_error("memory");
   olen = sb_stemmer_length(stemmer);
 
   return PL_unify_chars(out, PL_ATOM|REP_UTF8, olen, (const char*)stemmed);
@@ -215,15 +180,9 @@ snowball_algorithms(term_t list)
   return PL_unify_nil(tail);
 }
 
-#define MKFUNCTOR(name, arity) PL_new_functor(PL_new_atom(name), arity)
-
 install_t
-install_snowball()
+install_snowball(void)
 { assert(sizeof(sb_symbol) == sizeof(char));
-
-  FUNCTOR_error2        = MKFUNCTOR("error", 2);
-  FUNCTOR_type_error2   = MKFUNCTOR("type_error", 2);
-  FUNCTOR_domain_error2 = MKFUNCTOR("domain_error", 2);
 
   PL_register_foreign("snowball", 3, snowball, 0);
   PL_register_foreign("snowball_algorithms", 1, snowball_algorithms, 0);
