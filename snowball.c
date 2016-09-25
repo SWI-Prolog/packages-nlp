@@ -112,6 +112,7 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
   int k;
   stemmer *s;
   struct sb_stemmer *st;
+  const char *lname;
 
   if ( !PL_get_atom(t, &lang) )
     return PL_type_error("atom", t);
@@ -124,7 +125,8 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
     }
   }
 
-  if ( !(st=sb_stemmer_new(PL_atom_chars(lang), NULL)) )
+  if ( !(lname=PL_atom_chars(lang)) ||
+       !(st=sb_stemmer_new(lname, NULL)) )
   { if ( errno == ENOMEM )
       return PL_resource_error("memory");
     else
