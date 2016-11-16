@@ -50,7 +50,7 @@ on the length of common substrings.
 */
 
 %%	isub(+Text1:atomic, +Text2:atomic, +Normalize:bool,
-%%	     -Similarity:float) is det.q
+%%	     -Similarity:float) is det.
 %
 %	Similarity is a measure for the distance between Text1 and
 %	Text2.  E.g.
