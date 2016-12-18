@@ -33,8 +33,8 @@
 */
 
 :- module(isub,
-	  [ isub/4			% +Text1, +Text2, +Normalize, -Distance
-	  ]).
+          [ isub/4                      % +Text1, +Text2, +Normalize, -Distance
+          ]).
 
 :- use_foreign_library(foreign(isub)).
 
@@ -45,30 +45,30 @@ something similar to the _|Levenshtein distance|_.  This method is based
 on the length of common substrings.
 
 @author Giorgos Stoilos
-@see	_|A string metric for ontology alignment|_ by Giorgos Stoilos,
-	2005.
+@see    _|A string metric for ontology alignment|_ by Giorgos Stoilos,
+        2005.
 */
 
-%%	isub(+Text1:atomic, +Text2:atomic, +Normalize:bool,
-%%	     -Similarity:float) is det.
+%!  isub(+Text1:atomic, +Text2:atomic, +Normalize:bool,
+%!       -Similarity:float) is det.
 %
-%	Similarity is a measure for the distance between Text1 and
-%	Text2.  E.g.
+%   Similarity is a measure for the distance between Text1 and
+%   Text2.  E.g.
 %
-%	  ==
-%	  ?- isub('E56.Language', 'languange', true, D).
-%	  D = 0.711348.
-%	  ==
+%     ==
+%     ?- isub('E56.Language', 'languange', true, D).
+%     D = 0.711348.
+%     ==
 %
-%	If Normalize is =true=, isub/4   applies string normalization as
-%	implemented by the original authors: Text1  and Text2 are mapped
-%	to lowercase and the characters  "._   "  are removed. Lowercase
-%	mapping is done  with  the   C-library  function  towlower(). In
-%	general, the required normalization is   domain dependent and is
-%	better left to the caller.  See e.g., unaccent_atom/2.
+%   If Normalize is =true=, isub/4   applies string normalization as
+%   implemented by the original authors: Text1  and Text2 are mapped
+%   to lowercase and the characters  "._   "  are removed. Lowercase
+%   mapping is done  with  the   C-library  function  towlower(). In
+%   general, the required normalization is   domain dependent and is
+%   better left to the caller.  See e.g., unaccent_atom/2.
 %
-%	@param	Similarity is a float in the range [0.0..1.0], where 1.0
-%		means _|most similar|_
+%   @param  Similarity is a float in the range [0.0..1.0], where 1.0
+%           means _|most similar|_
 
 :- multifile sandbox:safe_primitive/1.
 

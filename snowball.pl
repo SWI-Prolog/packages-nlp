@@ -33,9 +33,9 @@
 */
 
 :- module(snowball,
-	  [ snowball/3,			 % +Algorithm, +In, -Out
-	    snowball_current_algorithm/1 % ?algorithm
-	  ]).
+          [ snowball/3,                  % +Algorithm, +In, -Out
+            snowball_current_algorithm/1 % ?algorithm
+          ]).
 :- use_module(library(sandbox)).
 
 /** <module> The Snowball multi-lingual stemmer library
@@ -59,39 +59,39 @@ Here is an example:
 
 :- use_foreign_library(foreign(snowball)).
 
-%%	snowball(+Algorithm, +Input, -Stem) is det.
+%!  snowball(+Algorithm, +Input, -Stem) is det.
 %
-%	Apply the Snowball Algorithm on Input and unify the result
-%	(an atom) with Stem.
+%   Apply the Snowball Algorithm on Input and unify the result
+%   (an atom) with Stem.
 %
-%	The implementation maintains a cache of stemmers for each thread
-%	that  accesses  snowball/3,   providing    high-perfomance   and
-%	thread-safety without locking.
+%   The implementation maintains a cache of stemmers for each thread
+%   that  accesses  snowball/3,   providing    high-perfomance   and
+%   thread-safety without locking.
 %
-%	@param	Algorithm is the (english) name for desired algorithm
-%		or an 2 or 3 letter ISO 639 language code.
-%	@param	Input is the word to be stemmed.  It is either an
-%		atom, string or list of chars/codes.  The library
-%		accepts Unicode characters.  Input must be
-%		_lowercase_.  See downcase_atom/2.
-%	@error domain_error(snowball_algorithm, Algorithm)
-%	@error type_error(atom, Algorithm)
-%	@error type_error(text, Input)
+%   @param  Algorithm is the (english) name for desired algorithm
+%           or an 2 or 3 letter ISO 639 language code.
+%   @param  Input is the word to be stemmed.  It is either an
+%           atom, string or list of chars/codes.  The library
+%           accepts Unicode characters.  Input must be
+%           _lowercase_.  See downcase_atom/2.
+%   @error domain_error(snowball_algorithm, Algorithm)
+%   @error type_error(atom, Algorithm)
+%   @error type_error(text, Input)
 
-%%	snowball_current_algorithm(?Algorithm) is nondet.
+%!  snowball_current_algorithm(?Algorithm) is nondet.
 %
-%	True if Algorithm is the official  name of an algorithm suported
-%	by snowball/3. The predicate is =semidet= if Algorithm is given.
+%   True if Algorithm is the official  name of an algorithm suported
+%   by snowball/3. The predicate is =semidet= if Algorithm is given.
 
 term_expansion(snowball_current_algorithm(dummy), Clauses) :-
-	snowball_algorithms(Algos),
-	maplist(wrap, Algos, Clauses).
+    snowball_algorithms(Algos),
+    maplist(wrap, Algos, Clauses).
 
 wrap(X, snowball_current_algorithm(X)).
 
 snowball_current_algorithm(dummy).
 
 :- multifile
-	sandbox:safe_primitive/1.
+    sandbox:safe_primitive/1.
 
 sandbox:safe_primitive(snowball:snowball(_,_,_)).

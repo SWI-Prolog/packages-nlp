@@ -33,11 +33,11 @@
 */
 
 :- module(porter_stem,
-	  [ porter_stem/2,		% +Raw, -Stem
-	    unaccent_atom/2,		% +Raw, -Unaccented
-	    tokenize_atom/2,		% +Raw, -Tokens
-	    atom_to_stem_list/2		% +Raw, -ListOfStems
-	  ]).
+          [ porter_stem/2,              % +Raw, -Stem
+            unaccent_atom/2,            % +Raw, -Unaccented
+            tokenize_atom/2,            % +Raw, -Tokens
+            atom_to_stem_list/2         % +Raw, -ListOfStems
+          ]).
 
 :- use_foreign_library(foreign(porter_stem)).
 

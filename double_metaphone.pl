@@ -33,9 +33,9 @@
 */
 
 :- module(double_metaphone,
-	  [ double_metaphone/2,		% +In, -Primary
-	    double_metaphone/3		% +In, -Primary, -Secondary
-	  ]).
+          [ double_metaphone/2,         % +In, -Primary
+            double_metaphone/3          % +In, -Primary, -Secondary
+          ]).
 :- use_module(library(sandbox)).
 
 :- use_foreign_library(foreign(double_metaphone)).
@@ -68,18 +68,18 @@ therefore including this module poses no additional license conditions.
     ==
 */
 
-%%	double_metaphone(+In, -MetaPhone) is det.
+%!  double_metaphone(+In, -MetaPhone) is det.
 %
-%	Same as double_metaphone/3,  but  only   returning  the  primary
-%	metaphone.
+%   Same as double_metaphone/3,  but  only   returning  the  primary
+%   metaphone.
 
-%%	double_metaphone(+In, -MetaPhone, -AltMetaphone) is det.
+%!  double_metaphone(+In, -MetaPhone, -AltMetaphone) is det.
 %
-%	Create metaphone and alternative metaphone  from In. The primary
-%	metaphone is based on english, while   the  secondary deals with
-%	common alternative pronounciation in  other   languages.  In  is
-%	either and atom, string object,  code-   or  character list. The
-%	metaphones are always returned as atoms.
+%   Create metaphone and alternative metaphone  from In. The primary
+%   metaphone is based on english, while   the  secondary deals with
+%   common alternative pronounciation in  other   languages.  In  is
+%   either and atom, string object,  code-   or  character list. The
+%   metaphones are always returned as atoms.
 
 :- multifile sandbox:safe_primitive/1.
 

@@ -33,9 +33,9 @@
 */
 
 :- module(test_nlp,
-	  [ run_tests/0,
+          [ run_tests/0,
             run_tests/1
-	  ]).
+          ]).
 
 :- asserta(user:file_search_path(foreign, '.')).
 :- asserta(user:file_search_path(library, '.')).
@@ -50,20 +50,20 @@
 :- begin_tests(stem).
 
 test(stem, [true(X==walk)]) :-
-	porter_stem(walks, X).
+    porter_stem(walks, X).
 test(stem, [true(X==walk)]) :-
-	porter_stem(walk, X).
+    porter_stem(walk, X).
 test(tokens, [true(X==[hello, world, !])]) :-
-	tokenize_atom('hello world!', X).
+    tokenize_atom('hello world!', X).
 test(stem_list, [true(X==[hello, world])]) :-
-	atom_to_stem_list('hello worlds!', X).
+    atom_to_stem_list('hello worlds!', X).
 
 :- end_tests(stem).
 
 :- begin_tests(metaphone).
 
 test(metaphone, [true(X=='ARLT')]) :-
-     double_metaphone(world, X).
+    double_metaphone(world, X).
 
 :- end_tests(metaphone).
 
@@ -74,17 +74,17 @@ test(metaphone, [true(X=='ARLT')]) :-
 :- use_module('../sgml/iso_639').
 
 test(snowball_cache, Pairs1 == Pairs2) :-
-	X = wandelen,
-	findall(Code-Stem, stem(Code, X, Stem), Pairs1),
-	findall(Code-Stem, stem(Code, X, Stem), Pairs2),
-	length(Pairs1, Len),
-	assertion(Len > 10).
+    X = wandelen,
+    findall(Code-Stem, stem(Code, X, Stem), Pairs1),
+    findall(Code-Stem, stem(Code, X, Stem), Pairs2),
+    length(Pairs1, Len),
+    assertion(Len > 10).
 
 stem(Code, For, Stem) :-
-	iso_639(Code, _Lang),
-	catch(snowball(Code, For, Stem),
-	      error(domain_error(snowball_algorithm, Code), _),
-	      fail).
+    iso_639(Code, _Lang),
+    catch(snowball(Code, For, Stem),
+          error(domain_error(snowball_algorithm, Code), _),
+          fail).
 
 :- endif.
 
