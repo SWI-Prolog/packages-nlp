@@ -3,7 +3,7 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2010-2016, VU University Amsterdam
+    Copyright (c)  2010-2017, VU University Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -136,6 +136,7 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
   s = PL_malloc(sizeof(*s));
   s->language = lang;
   s->stemmer = st;
+  PL_register_atom(lang);
 
   s->next = cache->stemmers[k];
   cache->stemmers[k] = s;
