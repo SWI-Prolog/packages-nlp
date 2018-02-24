@@ -69,12 +69,12 @@ ln-install::
 rpm-install:	install
 
 html-install::
-		mkdir -p $(DESTDIR)$(PKGDOC)
-		$(INSTALL) -m 644 $(DOC).html $(DESTDIR)$(PKGDOC)
+		mkdir -p $(DESTDIR)$(PKGDOCDIR)
+		$(INSTALL) -m 644 $(DOC).html $(DESTDIR)$(PKGDOCDIR)
 
 pdf-install::
-		mkdir -p $(DESTDIR)$(PKGDOC)
-		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOC)
+		mkdir -p $(DESTDIR)$(PKGDOCDIR)
+		$(INSTALL) -m 644 $(DOC).pdf $(DESTDIR)$(PKGDOCDIR)
 
 uninstall::
 		(cd $(PLBASE)/$(SOLIB)/$(INSTALL_PLARCH) && rm -f $(TARGETS))
