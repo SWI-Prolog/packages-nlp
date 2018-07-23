@@ -761,7 +761,8 @@ pl_tokenize(term_t text, term_t tokens)
   } else if ( PL_get_wchars(text, &len, &ws, CVT_ALL|CVT_EXCEPTION) )
   { if ( !tokenizeW(ws, len, unify_tokenW, &l) )
       return FALSE;
-  }
+  } else
+    return FALSE;
 
   return PL_unify_nil(l.tail);
 }
