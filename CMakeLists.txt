@@ -30,3 +30,6 @@ swipl_plugin(
     C_LIBS libstemmer
     PL_LIBS snowball.pl)
 
+pkg_doc(nlp
+	SECTION
+	    snowball.pl isub.pl)
