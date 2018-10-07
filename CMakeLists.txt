@@ -30,6 +30,9 @@ swipl_plugin(
     C_LIBS libstemmer
     PL_LIBS snowball.pl)
 
+add_custom_target(nlp)
+add_dependencies(nlp double_metaphone porter_stem isub snowball)
+
 pkg_doc(nlp
 	SECTION
 	    snowball.pl isub.pl)
