@@ -27,7 +27,7 @@ swipl_plugin(
 swipl_plugin(
     snowball
     C_SOURCES snowball.c
-    C_LIBS libstemmer
+    THREADED C_LIBS libstemmer
     PL_LIBS snowball.pl)
 
 add_custom_target(nlp)
