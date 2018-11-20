@@ -40,7 +40,7 @@ misleading.  Suggestions and contributions are welcome.
 
 The library \pllib{double_metaphone} implements the \emph{Double
 Metaphone} algorithm developed by Lawrence Philips and described in
-``The Double-Metaphone Search Algorithm'' by L Philips, C/C++ User’s
+``The Double-Metaphone Search Algorithm'' by L Philips, C/C++ User's
 Journal, 2000. Double Metaphone creates a key from a word that
 represents its phonetic properties. Two words with the same Double
 Metaphone are supposed to sound similar. The Double Metaphone algorithm
