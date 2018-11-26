@@ -35,25 +35,54 @@
 #include <config.h>
 #include <SWI-Prolog.h>
 #include "isub.h"
+#include "wcsdup.ic"
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+isub_score_inplace() modifies the contents.  That is why we use
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#define FAST_SIZE 64
+
+static int
+get_chars(term_t t, wchar_t **sb, wchar_t *buf)
+{ wchar_t *s;
+  size_t len;
+
+  if ( PL_get_wchars(t, &len, &s, CVT_ATOMIC|CVT_LIST|CVT_EXCEPTION) )
+  { if ( len+1 < FAST_SIZE )
+    { *sb = wcscpy(buf, s);
+    } else
+    { if ( !(*sb = wcsdup(s)) )
+	return FALSE;
+    }
+
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
 
 static foreign_t
 pl_isub(term_t t1, term_t t2, term_t normalize, term_t sim)
-{ wchar_t *s1=NULL, *s2=NULL;
+{ wchar_t buf1[FAST_SIZE];
+  wchar_t buf2[FAST_SIZE];
+  wchar_t *s1=NULL, *s2=NULL;
   int rc;
   int normaliseStrings;
 
-  if ( !PL_get_wchars(t1, NULL, &s1, CVT_ATOMIC|CVT_EXCEPTION|BUF_MALLOC) ||
-       !PL_get_wchars(t2, NULL, &s2, CVT_ATOMIC|CVT_EXCEPTION|BUF_MALLOC) ||
+  if ( !get_chars(t1, &s1, buf1) ||
+       !get_chars(t2, &s2, buf2) ||
        !PL_get_bool_ex(normalize, &normaliseStrings) )
   { rc = FALSE;
     goto out;
   }
 
-  rc = PL_unify_float(sim, score_inplace(s1, s2, normaliseStrings));
+  rc = PL_unify_float(sim, isub_score_inplace(s1, s2, normaliseStrings));
 
 out:
-  if ( s1 ) PL_free(s1);
-  if ( s2 ) PL_free(s2);
+  if ( s1 && s1 != buf1 ) PL_free(s1);
+  if ( s2 && s2 != buf2 ) PL_free(s2);
 
   return rc;
 }

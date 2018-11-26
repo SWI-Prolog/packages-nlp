@@ -49,7 +49,7 @@ on the length of common substrings.
         2005.
 */
 
-%!  isub(+Text1:atomic, +Text2:atomic, +Normalize:bool,
+%!  isub(+Text1:text, +Text2:text, +Normalize:bool,
 %!       -Similarity:float) is det.
 %
 %   Similarity is a measure for the distance between Text1 and
@@ -67,8 +67,10 @@ on the length of common substrings.
 %   general, the required normalization is   domain dependent and is
 %   better left to the caller.  See e.g., unaccent_atom/2.
 %
-%   @param  Similarity is a float in the range [0.0..1.0], where 1.0
-%           means _|most similar|_
+%   @arg Text1 and Text2 are either an atom, string or a list of
+%   characters or character codes.
+%   @arg Similarity is a float in the range [0.0..1.0], where 1.0
+%   means _|most similar|_
 
 :- multifile sandbox:safe_primitive/1.
 
