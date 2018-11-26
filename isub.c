@@ -48,23 +48,7 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
 #include <wchar.h>
 #include <wctype.h>
 #include "isub.h"
-
-#if defined(__sun) || __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 1070
-#undef HAVE_WCSDUP
-#endif
-
-#ifndef HAVE_WCSDUP
-static wchar_t *
-my_wcsdup(const wchar_t *in)
-{ wchar_t *copy = malloc((wcslen(in)+1)*sizeof(wchar_t));
-
-  if ( copy )
-    return wcscpy(copy, in);
-
-  return NULL;
-}
-#define wcsdup(ws) my_wcsdup(ws)
-#endif
+#include "wcsdup.ic"
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
@@ -113,7 +97,7 @@ common_prefix_length(const wchar_t *s1, const wchar_t *s2)
 
 
 double
-score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
+isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
 { int l1, l2, L1, L2;
   double common = 0.0;
   size_t common_prefix_len;
@@ -227,12 +211,12 @@ score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
 
 
 double
-score(const wchar_t *st1, const wchar_t *st2, int normalizeString)
+isub_score(const wchar_t *st1, const wchar_t *st2, int normalizeString)
 { wchar_t *s1 = wcsdup(st1);
   wchar_t *s2 = wcsdup(st2);
   double rc;
 
-  rc = score_inplace(s1, s2, normalizeString);
+  rc = isub_score_inplace(s1, s2, normalizeString);
   free(s1);
   free(s2);
 
