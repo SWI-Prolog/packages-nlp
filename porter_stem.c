@@ -573,7 +573,11 @@ tokenizeA(const char *in, size_t len,
       }
 
       if ( !(*call)((const char*)st, s-st, type, closure) )
-	return FALSE;
+      { while(s<se && iswalnum(*s))
+	  s++;
+	if ( !(*call)((const char*)st, s-st, TOK_WORD, closure) )
+	  return FALSE;
+      }
     } else if ( iswalnum(*s) )
     { while(s<se && iswalnum(*s))
 	s++;
@@ -639,7 +643,12 @@ tokenizeW(const wchar_t *in, size_t len,
       }
 
       if ( !(*call)((const wchar_t*)st, s-st, type, closure) )
-	return FALSE;
+      { while(s<se && iswalnum(*s))
+	  s++;
+	if ( !(*call)((const wchar_t*)st, s-st, TOK_WORD, closure) )
+	  return FALSE;
+      }
+
     } else if ( iswalnum(*s) )
     { while(s<se && iswalnum(*s))
 	s++;
