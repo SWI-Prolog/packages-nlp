@@ -573,7 +573,9 @@ tokenizeA(const char *in, size_t len,
       }
 
       if ( !(*call)((const char*)st, s-st, type, closure) )
-      { while(s<se && iswalnum(*s))
+      { if ( PL_exception(0) )
+	  return FALSE;
+	while(s<se && iswalnum(*s))
 	  s++;
 	if ( !(*call)((const char*)st, s-st, TOK_WORD, closure) )
 	  return FALSE;
@@ -643,7 +645,9 @@ tokenizeW(const wchar_t *in, size_t len,
       }
 
       if ( !(*call)((const wchar_t*)st, s-st, type, closure) )
-      { while(s<se && iswalnum(*s))
+      { if ( PL_exception(0) )
+	  return FALSE;
+	while(s<se && iswalnum(*s))
 	  s++;
 	if ( !(*call)((const wchar_t*)st, s-st, TOK_WORD, closure) )
 	  return FALSE;
@@ -676,39 +680,40 @@ static int
 unify_tokenA(const char *s, size_t len, toktype type, void *closure)
 { list *l = closure;
 
-  if ( PL_unify_list(l->tail, l->head, l->tail) )
-  { switch(type)
-    { case TOK_INT:
-      case TOK_FLOAT:
-      { char buf[100];
-	char *a, *o;
-	const char *i;
-	int rc;
+  switch(type)
+  { case TOK_INT:
+    case TOK_FLOAT:
+    { char buf[100];
+      char *a, *o;
+      const char *i;
+      int rc;
 
-	if ( len+1 > sizeof(buf) )
-	{ if ( !(a = malloc(len+1)) )
-	    return PL_resource_error("memory");
-	} else
-	{ a = buf;
-	}
-
-	for(i=s,o=a; len-- > 0; )
-	  *o++ = (char)*i++;
-	*o = '\0';
-
-	rc = ( PL_chars_to_term(a, l->tmp) &&
-	       PL_unify(l->head, l->tmp)
-	     );
-	if ( a != buf )
-	  free(a);
-	return rc;
+      if ( len+1 > sizeof(buf) )
+      { if ( !(a = malloc(len+1)) )
+	  return PL_resource_error("memory");
+      } else
+      { a = buf;
       }
-      default:
-	return PL_unify_atom_nchars(l->head, len, s);
+
+      for(i=s,o=a; len-- > 0; )
+	*o++ = (char)*i++;
+      *o = '\0';
+
+      rc = PL_chars_to_term(a, l->tmp);
+      if ( a != buf )
+	free(a);
+      if ( !rc )
+	return rc;
+      break;
     }
+    default:
+      if ( !PL_put_atom_nchars(l->tmp, len, s) )
+	return FALSE;
+    break;
   }
 
-  return FALSE;
+  return ( PL_unify_list(l->tail, l->head, l->tail) &&
+	   PL_unify(l->head, l->tmp) );
 }
 
 
@@ -716,39 +721,42 @@ static int
 unify_tokenW(const wchar_t *s, size_t len, toktype type, void *closure)
 { list *l = closure;
 
-  if ( PL_unify_list(l->tail, l->head, l->tail) )
-  { switch(type)
-    { case TOK_INT:
-      case TOK_FLOAT:
-      { char buf[100];
-	char *a, *o;
-	const wchar_t *i;
-	int rc;
+  switch(type)
+  { case TOK_INT:
+    case TOK_FLOAT:
+    { char buf[100];
+      char *a, *o;
+      const wchar_t *i;
+      int rc;
 
-	if ( len+1 > sizeof(buf) )
-	{ if ( !(a = malloc(len+1)) )
-	    return PL_resource_error("memory");
-	} else
-	{ a = buf;
-	}
-
-	for(i=s,o=a; len-- > 0; )
-	  *o++ = (char)*i++;
-	*o = '\0';
-
-	rc = ( PL_chars_to_term(a, l->tmp) &&
-	       PL_unify(l->head, l->tmp)
-	     );
-	if ( a != buf )
-	  free(a);
-	return rc;
+      if ( len+1 > sizeof(buf) )
+      { if ( !(a = malloc(len+1)) )
+	  return PL_resource_error("memory");
+      } else
+      { a = buf;
       }
-      default:
-	return PL_unify_wchars(l->head, PL_ATOM, len, s);
+
+      for(i=s,o=a; len-- > 0; )
+	*o++ = (char)*i++;
+      *o = '\0';
+
+      rc = PL_chars_to_term(a, l->tmp);
+
+      if ( a != buf )
+	free(a);
+      if ( !rc )
+	return rc;
+      break;
     }
+    default:
+      if ( !PL_put_variable(l->tmp) ||
+	   !PL_unify_wchars(l->tmp, PL_ATOM, len, s) )
+	return FALSE;
+      break;
   }
 
-  return FALSE;
+  return ( PL_unify_list(l->tail, l->head, l->tail) &&
+	   PL_unify(l->head, l->tmp) );
 }
 
 
