@@ -36,3 +36,5 @@ add_dependencies(nlp double_metaphone porter_stem isub snowball)
 pkg_doc(nlp
 	SECTION
 	    snowball.pl isub.pl)
+
+test_libs(nlp)

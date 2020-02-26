@@ -34,8 +34,7 @@
 */
 
 :- module(test_nlp,
-          [ run_tests/0,
-            run_tests/1
+          [ test_nlp/0
           ]).
 :- use_module(library(plunit)).
 :- autoload(library(double_metaphone),[double_metaphone/2]).
