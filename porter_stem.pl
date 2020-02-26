@@ -39,6 +39,7 @@
             atom_to_stem_list/2         % +Raw, -ListOfStems
           ]).
 
+
 :- use_foreign_library(foreign(porter_stem)).
 
 :- multifile sandbox:safe_primitive/1.

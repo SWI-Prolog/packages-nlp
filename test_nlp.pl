@@ -3,7 +3,8 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2016, VU University Amsterdam
+    Copyright (c)  2016-2020, VU University Amsterdam
+                              CWI, Amsterdam
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -36,16 +37,16 @@
           [ run_tests/0,
             run_tests/1
           ]).
-
-:- asserta(user:file_search_path(foreign, '.')).
-:- asserta(user:file_search_path(library, '.')).
-:- asserta(user:file_search_path(library, '../plunit')).
-
 :- use_module(library(plunit)).
-:- use_module(library(debug)).
-:- use_module(library(porter_stem)).
-:- use_module(library(double_metaphone)).
-:- use_module(library(snowball)).
+:- autoload(library(double_metaphone),[double_metaphone/2]).
+:- autoload(library(porter_stem),
+	    [porter_stem/2,tokenize_atom/2,atom_to_stem_list/2]).
+
+test_nlp :-
+    run_tests([ stem,
+                metaphone,
+                snowball
+              ]).
 
 :- begin_tests(stem).
 

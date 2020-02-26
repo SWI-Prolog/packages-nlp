@@ -36,7 +36,7 @@
           [ snowball/3,                  % +Algorithm, +In, -Out
             snowball_current_algorithm/1 % ?algorithm
           ]).
-:- use_module(library(sandbox)).
+:- autoload(library(apply),[maplist/3]).
 
 /** <module> The Snowball multi-lingual stemmer library
 

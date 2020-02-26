@@ -36,7 +36,6 @@
           [ double_metaphone/2,         % +In, -Primary
             double_metaphone/3          % +In, -Primary, -Secondary
           ]).
-:- use_module(library(sandbox)).
 
 :- use_foreign_library(foreign(double_metaphone)).
 
