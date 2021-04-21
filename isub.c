@@ -40,7 +40,10 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
  * Jérōme Euzenat: added normalization
  */
 
+#ifndef STAND_ALONE
 #include <config.h>
+#endif
+
 #define _GNU_SOURCE			/* get wcsdup */
 #include <memory.h>
 #include <string.h>
@@ -97,7 +100,7 @@ common_prefix_length(const wchar_t *s1, const wchar_t *s2)
 
 
 double
-isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
+isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings, int allowShort)
 { int l1, l2, L1, L2;
   double common = 0.0;
   size_t common_prefix_len;
@@ -172,10 +175,15 @@ isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
     l1 -= endS1-startS1;
     l2 -= endS2-startS2;
 
-    if (best > 2)
-      common += best;
-    else
-      best = 0;
+    if (!allowShort) {  // Original algorithm used normally
+        if (best > 2)
+          common += best;
+        else
+          best = 0;
+    } else {  // Algorithm allowing short similarities/dissimilarities
+        common += best;
+    }
+
   }
 
   { double scaledCommon = (double) (2.0 * common) / (double)(L1 + L2);
@@ -211,12 +219,12 @@ isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings )
 
 
 double
-isub_score(const wchar_t *st1, const wchar_t *st2, int normalizeString)
+isub_score(const wchar_t *st1, const wchar_t *st2, int normalizeString, int allowShort)
 { wchar_t *s1 = wcsdup(st1);
   wchar_t *s2 = wcsdup(st2);
   double rc;
 
-  rc = isub_score_inplace(s1, s2, normalizeString);
+  rc = isub_score_inplace(s1, s2, normalizeString, allowShort);
   free(s1);
   free(s2);
 
@@ -243,9 +251,9 @@ main(int argc, char **argv)
   double total=0.0;
   int i;
   for(i=0; i<1000000; i++)
-    total += score(ws1, ws2);
+    total += isub_score(ws1, ws2, 1, 0);
 
-  total = score(ws1, ws2);
+  total = isub_score(ws1, ws2, 1, 0);
   wprintf(L"%ls %ls: %f\n", ws1, ws2, total);
 
   return 0;

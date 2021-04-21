@@ -64,7 +64,7 @@ get_chars(term_t t, wchar_t **sb, wchar_t *buf)
 
 
 static foreign_t
-pl_isub(term_t t1, term_t t2, term_t normalize, term_t sim)
+pl_isub_(term_t t1, term_t t2, term_t normalize, term_t sim, int allowShort)
 { wchar_t buf1[FAST_SIZE];
   wchar_t buf2[FAST_SIZE];
   wchar_t *s1=NULL, *s2=NULL;
@@ -78,7 +78,7 @@ pl_isub(term_t t1, term_t t2, term_t normalize, term_t sim)
     goto out;
   }
 
-  rc = PL_unify_float(sim, isub_score_inplace(s1, s2, normaliseStrings));
+  rc = PL_unify_float(sim, isub_score_inplace(s1, s2, normaliseStrings, allowShort));
 
 out:
   if ( s1 && s1 != buf1 ) PL_free(s1);
@@ -87,8 +87,21 @@ out:
   return rc;
 }
 
+static foreign_t
+pl_isub(term_t t1, term_t t2, term_t normalize, term_t sim)
+{  int allowShort = 0;
+   return pl_isub_(t1, t2, normalize, sim, allowShort);
+}
+
+static foreign_t
+pl_isub_short(term_t t1, term_t t2, term_t normalize, term_t sim)
+{  int allowShort = 1;
+   return pl_isub_(t1,  t2, normalize, sim, allowShort);
+}
+
 
 install_t
 install_isub()
 { PL_register_foreign("isub", 4, pl_isub, 0);
+  PL_register_foreign("isub_short", 4, pl_isub_short, 0);
 }
