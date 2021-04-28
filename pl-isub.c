@@ -64,21 +64,23 @@ get_chars(term_t t, wchar_t **sb, wchar_t *buf)
 
 
 static foreign_t
-pl_isub_(term_t t1, term_t t2, term_t normalize, term_t sim, int allowShort)
+pl_isub(term_t t1, term_t t2, term_t tsim, term_t toptions, term_t tsubstring_threshold)
 { wchar_t buf1[FAST_SIZE];
   wchar_t buf2[FAST_SIZE];
   wchar_t *s1=NULL, *s2=NULL;
   int rc;
-  int normaliseStrings;
+  int options;
+  int substring_threshold;
 
   if ( !get_chars(t1, &s1, buf1) ||
        !get_chars(t2, &s2, buf2) ||
-       !PL_get_bool_ex(normalize, &normaliseStrings) )
+       !PL_get_integer_ex(tsubstring_threshold, &substring_threshold) ||
+       !PL_get_integer_ex(toptions, &options) )
   { rc = FALSE;
     goto out;
   }
 
-  rc = PL_unify_float(sim, isub_score_inplace(s1, s2, normaliseStrings, allowShort));
+  rc = PL_unify_float(tsim, isub_score_inplace(s1, s2, options, substring_threshold));
 
 out:
   if ( s1 && s1 != buf1 ) PL_free(s1);
@@ -87,21 +89,8 @@ out:
   return rc;
 }
 
-static foreign_t
-pl_isub(term_t t1, term_t t2, term_t normalize, term_t sim)
-{  int allowShort = 0;
-   return pl_isub_(t1, t2, normalize, sim, allowShort);
-}
-
-static foreign_t
-pl_isub_short(term_t t1, term_t t2, term_t normalize, term_t sim)
-{  int allowShort = 1;
-   return pl_isub_(t1,  t2, normalize, sim, allowShort);
-}
-
 
 install_t
 install_isub()
-{ PL_register_foreign("isub", 4, pl_isub, 0);
-  PL_register_foreign("isub_short", 4, pl_isub_short, 0);
+{ PL_register_foreign("$isub", 5, pl_isub, 0);
 }

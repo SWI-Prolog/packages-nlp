@@ -56,7 +56,11 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
 #define MIN(a,b) ((a) < (b) ? (a) : (b))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
-#define DEBUG(g) (void)0
+#define DEBUG(g) (void)(0)
+
+// Default is [-1,1] range, and skip normalization
+#define ZERO_TO_ONE       (0x1)       // Result in [0,1] range, [-1,1] if not set
+#define NORMALIZE         (0x2)       // Normalize input words
 
 static void
 toLowerCase(wchar_t *s)
@@ -100,13 +104,13 @@ common_prefix_length(const wchar_t *s1, const wchar_t *s2)
 
 
 double
-isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings, int allowShort)
+isub_score_inplace(wchar_t *s1, wchar_t *s2, int options, int substring_threshold)
 { int l1, l2, L1, L2;
   double common = 0.0;
   size_t common_prefix_len;
   int best = 2;
 
-  if ( normaliseStrings )
+  if ( options & NORMALIZE )
   { toLowerCase(s1);
     toLowerCase(s2);
 
@@ -175,14 +179,10 @@ isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings, int allowShor
     l1 -= endS1-startS1;
     l2 -= endS2-startS2;
 
-    if (!allowShort) {  // Original algorithm used normally
-        if (best > 2)
-          common += best;
-        else
-          best = 0;
-    } else {  // Algorithm allowing short similarities/dissimilarities
-        common += best;
-    }
+    if (best > substring_threshold)   // Original algorighm used best > 2
+       common += best;
+    else
+       best = 0;
 
   }
 
@@ -213,18 +213,22 @@ isub_score_inplace(wchar_t *s1, wchar_t *s2, int normaliseStrings, int allowShor
     // Modification JE: returned normalization (instead of [-1 1])
     result = commonality - dissimilarity + winklerImprovementVal;
 
-    return (result + 1) / 2;
+    if ( options & ZERO_TO_ONE )
+       return (result + 1) / 2;
+    else
+       return result;  // Original algorithm returns result in [-1,1]
+
   }
 }
 
 
 double
-isub_score(const wchar_t *st1, const wchar_t *st2, int normalizeString, int allowShort)
+isub_score(const wchar_t *st1, const wchar_t *st2, int options, int substring_threshold)
 { wchar_t *s1 = wcsdup(st1);
   wchar_t *s2 = wcsdup(st2);
   double rc;
 
-  rc = isub_score_inplace(s1, s2, normalizeString, allowShort);
+  rc = isub_score_inplace(s1, s2, options, substring_threshold);
   free(s1);
   free(s2);
 
@@ -251,10 +255,16 @@ main(int argc, char **argv)
   double total=0.0;
   int i;
   for(i=0; i<1000000; i++)
-    total += isub_score(ws1, ws2, 1, 0);
+    total += isub_score(ws1, ws2, NORMALIZE, 2);
 
-  total = isub_score(ws1, ws2, 1, 0);
-  wprintf(L"%ls %ls: %f\n", ws1, ws2, total);
+  total = isub_score(ws1, ws2, ZERO_TO_ONE|NORMALIZE, 0);
+  wprintf(L"zero_to_one, normalize, threshold=0: %ls %ls: %f\n", ws1, ws2, total);
+  total = isub_score(ws1, ws2, NORMALIZE, 0);
+  wprintf(L"minus_one_to_one, normalize, threshold=0: %ls %ls: %f\n", ws1, ws2, total);
+  total = isub_score(ws1, ws2, ZERO_TO_ONE|NORMALIZE, 2);
+  wprintf(L"zero_to_one, normalize, threshold=2: %ls %ls: %f\n", ws1, ws2, total);
+  total = isub_score(ws1, ws2, NORMALIZE, 2);
+  wprintf(L"minus_one_to_one, normalize, threshold=2: %ls %ls: %f\n", ws1, ws2, total);
 
   return 0;
 }
