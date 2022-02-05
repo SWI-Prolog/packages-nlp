@@ -546,7 +546,7 @@ tokenizeA(const char *in, size_t len,
     st = s;
     type = TOK_UNKNOWN;
 
-    if ( issign(*s) && se-s > 1 && isdigit(s[1]) )
+    if ( *s == '-' && se-s > 1 && isdigit(s[1]) )
     { s += 2;
       type = TOK_INT;
     } else if ( isdigit(*s) )
@@ -618,7 +618,7 @@ tokenizeW(const wchar_t *in, size_t len,
     st = s;
     type = TOK_UNKNOWN;
 
-    if ( issign(*s) && se-s > 1 && isdigit(s[1]) )
+    if ( *s == '-' && se-s > 1 && isdigit(s[1]) )
     { s += 2;
       type = TOK_INT;
     } else if ( isdigit(*s) )
