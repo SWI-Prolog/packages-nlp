@@ -32,6 +32,7 @@
     POSSIBILITY OF SUCH DAMAGE.
 */
 
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <config.h>
 #include <SWI-Prolog.h>
 #include "isub.h"

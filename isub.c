@@ -45,6 +45,7 @@ Comparing "E56.Language" <-> "languange" (0.711348), 1,000,000 times:
 #endif
 
 #define _GNU_SOURCE			/* get wcsdup */
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <memory.h>
 #include <string.h>
 #include <stdlib.h>

@@ -20,6 +20,7 @@ COPYRIGHT
   modify it under the same terms as Perl itself.
 */
 
+#define _CRT_SECURE_NO_WARNINGS 1
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
