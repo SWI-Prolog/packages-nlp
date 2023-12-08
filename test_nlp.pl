@@ -3,8 +3,9 @@
     Author:        Jan Wielemaker
     E-mail:        J.Wielemaker@vu.nl
     WWW:           http://www.swi-prolog.org
-    Copyright (c)  2016-2020, VU University Amsterdam
+    Copyright (c)  2016-2023, VU University Amsterdam
                               CWI, Amsterdam
+                              SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -40,6 +41,7 @@
 :- autoload(library(double_metaphone),[double_metaphone/2]).
 :- autoload(library(porter_stem),
 	    [porter_stem/2,tokenize_atom/2,atom_to_stem_list/2]).
+:- autoload(library(snowball)).
 
 test_nlp :-
     run_tests([ stem,
