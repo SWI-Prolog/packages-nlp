@@ -38,6 +38,7 @@
 #include "libstemmer_c/include/libstemmer.h"
 #include <pthread.h>
 #include <string.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -57,11 +58,15 @@ static pthread_key_t stem_key;
 #ifndef __WINDOWS__
 static pthread_once_t stem_key_once = PTHREAD_ONCE_INIT;
 #endif
+static int stem_unloading = 0;
 
 static void
 stem_destroy_cache(void *buf)
 { stem_cache *cache = buf;
   int i;
+
+  if ( stem_unloading || PL_query(PL_QUERY_HALTING) )
+    return;
 
   for(i=0; i<STEMMER_BUCKETS; i++)
   { stemmer *s = cache->stemmers[i];
@@ -183,6 +188,11 @@ snowball_algorithms(term_t list)
   return PL_unify_nil(tail);
 }
 
+static void
+stem_at_exit(void)
+{ stem_unloading = 1;
+}
+
 install_t
 install_snowball(void)
 { assert(sizeof(sb_symbol) == sizeof(char));
@@ -192,5 +202,12 @@ install_snowball(void)
 
 #ifdef __WINDOWS__
   stem_key_alloc();
+  atexit(stem_at_exit);
 #endif
+}
+
+install_t
+uninstall_snowball(void)
+{ stem_unloading = 1;
+  pthread_key_delete(stem_key);
 }
