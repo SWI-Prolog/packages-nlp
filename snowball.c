@@ -1,9 +1,10 @@
 /*  Part of SWI-Prolog
 
     Author:        Jan Wielemaker
-    E-mail:        J.Wielemaker@vu.nl
-    WWW:           http://www.swi-prolog.org
-    Copyright (c)  2010-2017, VU University Amsterdam
+    E-mail:        jan@swi-prolog.org;
+    WWW:           https://www.swi-prolog.org
+    Copyright (c)  2010-2026, VU University Amsterdam
+			      SWI-Prolog Solutions b.v.
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -53,51 +54,40 @@ typedef struct
 { stemmer	*stemmers[STEMMER_BUCKETS];
 } stem_cache;
 
-static pthread_key_t stem_key;
-#ifndef __WINDOWS__
-static pthread_once_t stem_key_once = PTHREAD_ONCE_INIT;
-#endif
+static __thread stem_cache *cache_ptr = NULL;
 
 static void
 stem_destroy_cache(void *buf)
-{ stem_cache *cache = buf;
-  int i;
+{ stem_cache *cache = cache_ptr;
 
-  for(i=0; i<STEMMER_BUCKETS; i++)
-  { stemmer *s = cache->stemmers[i];
-    stemmer *n;
+  if ( cache )
+  { for(int i=0; i<STEMMER_BUCKETS; i++)
+    { stemmer *s = cache->stemmers[i];
+      stemmer *n;
 
-    for( ; s; s = n)
-    { n = s->next;
+      for( ; s; s = n)
+      { n = s->next;
 
-      PL_unregister_atom(s->language);
-      sb_stemmer_delete(s->stemmer);
-      PL_free(s);
+	PL_unregister_atom(s->language);
+	sb_stemmer_delete(s->stemmer);
+	PL_free(s);
+      }
     }
+    PL_free(cache);
+    cache_ptr = NULL;
   }
-
-  PL_free(cache);
-}
-
-static void
-stem_key_alloc(void)
-{ pthread_key_create(&stem_key, stem_destroy_cache);
 }
 
 static stem_cache *
 get_cache(void)
 { stem_cache *cache;
 
-#ifndef __WINDOWS__
-  pthread_once(&stem_key_once, stem_key_alloc);
-#endif
-
-  if ( (cache=(stem_cache*)pthread_getspecific(stem_key)) )
+  if ( (cache=cache_ptr) )
     return cache;
   if ( (cache = PL_malloc(sizeof(stem_cache))) )
-    memset(cache, 0, sizeof(*cache));
-
-  pthread_setspecific(stem_key, cache);
+  { memset(cache, 0, sizeof(*cache));
+    cache_ptr = cache;
+  }
 
   return cache;
 }
@@ -105,7 +95,7 @@ get_cache(void)
 
 #define ATOM_HASH(a) ((unsigned int)(a>>7) & (STEMMER_BUCKETS-1))
 
-static int
+static bool
 get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
 { stem_cache *cache = get_cache();
   atom_t lang;
@@ -121,7 +111,7 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
   for(s=cache->stemmers[k]; s; s=s->next)
   { if ( s->language == lang )
     { *stemmerp = s->stemmer;
-      return TRUE;
+      return true;
     }
   }
 
@@ -142,7 +132,7 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
   cache->stemmers[k] = s;
 
   *stemmerp = st;
-  return TRUE;
+  return true;
 }
 
 
@@ -154,10 +144,10 @@ snowball(term_t lang, term_t in, term_t out)
   const sb_symbol *stemmed;
 
   if ( !get_lang_stemmer(lang, &stemmer) )
-    return FALSE;
+    return false;
   if ( !PL_get_nchars(in, &len, &s,
 		      CVT_ATOM|CVT_STRING|CVT_LIST|REP_UTF8|CVT_EXCEPTION) )
-    return FALSE;
+    return false;
 
   if ( !(stemmed = sb_stemmer_stem(stemmer, (const sb_symbol*)s, (int)len)) )
     return PL_resource_error("memory");
@@ -177,7 +167,7 @@ snowball_algorithms(term_t list)
   for(i=0; algos[i]; i++)
   { if ( !PL_unify_list(tail, head, tail) ||
 	 !PL_unify_atom_chars(head, algos[i]) )
-      return FALSE;
+      return false;
   }
 
   return PL_unify_nil(tail);
@@ -189,8 +179,5 @@ install_snowball(void)
 
   PL_register_foreign("snowball", 3, snowball, 0);
   PL_register_foreign("snowball_algorithms", 1, snowball_algorithms, 0);
-
-#ifdef __WINDOWS__
-  stem_key_alloc();
-#endif
+  PL_thread_at_exit(stem_destroy_cache, NULL, true);
 }
