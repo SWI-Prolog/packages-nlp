@@ -42,6 +42,10 @@
 #include <assert.h>
 #include <errno.h>
 
+#ifdef _MSC_VER
+#define __thread __declspec(thread)
+#endif
+
 #define STEMMER_BUCKETS (32)		/* cache CACHE_SIZE languages */
 
 typedef struct stemmer
