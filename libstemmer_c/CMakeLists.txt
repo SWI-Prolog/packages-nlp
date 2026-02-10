@@ -25,3 +25,6 @@ set(STEMMER_SOURCE
 add_library(libstemmer STATIC ${STEMMER_SOURCE})
 set_property(TARGET libstemmer PROPERTY
 	     POSITION_INDEPENDENT_CODE ON)
+if(MSVC)
+  target_compile_options(libstemmer PRIVATE /MD)
+endif()
