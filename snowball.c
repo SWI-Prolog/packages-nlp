@@ -97,7 +97,7 @@ get_cache(void)
 }
 
 
-#define ATOM_HASH(a) ((unsigned int)(a>>7) & (STEMMER_BUCKETS-1))
+#define ATOM_HASH(a) ((unsigned int)PL_atom_index(a) & (STEMMER_BUCKETS-1))
 
 static bool
 get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
