@@ -35,6 +35,7 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include <config.h>
 #include <SWI-Prolog.h>
+#include <stdlib.h>
 #include "isub.h"
 #include "wcsdup.ic"
 
@@ -64,6 +65,12 @@ get_chars(term_t t, wchar_t **sb, wchar_t *buf)
 }
 
 
+static int
+isub_interrupted(void)
+{ return PL_handle_signals() < 0;
+}
+
+
 static foreign_t
 pl_isub(term_t t1, term_t t2, term_t tsim, term_t toptions, term_t tsubstring_threshold)
 { wchar_t buf1[FAST_SIZE];
@@ -81,11 +88,18 @@ pl_isub(term_t t1, term_t t2, term_t tsim, term_t toptions, term_t tsubstring_th
     goto out;
   }
 
-  rc = PL_unify_float(tsim, isub_score_inplace(s1, s2, options, substring_threshold));
+  { double sim = isub_score_inplace(s1, s2, options, substring_threshold,
+				    isub_interrupted);
+
+    if ( PL_exception(0) )
+      rc = FALSE;
+    else
+      rc = PL_unify_float(tsim, sim);
+  }
 
 out:
-  if ( s1 && s1 != buf1 ) PL_free(s1);
-  if ( s2 && s2 != buf2 ) PL_free(s2);
+  if ( s1 && s1 != buf1 ) free(s1);
+  if ( s2 && s2 != buf2 ) free(s2);
 
   return rc;
 }

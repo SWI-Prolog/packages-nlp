@@ -42,7 +42,7 @@
 :- autoload(library(porter_stem),
 	    [porter_stem/2,tokenize_atom/2,atom_to_stem_list/2,unaccent_atom/2]).
 :- autoload(library(lists), [append/2, append/3]).
-:- autoload(library(apply), [maplist/2]).
+:- autoload(library(apply), [maplist/2, foldl/4]).
 :- autoload(library(time), [call_with_time_limit/2]).
 :- autoload(library(snowball)).
 % Not autoload: the goal expansion of isub/4 must be in effect while the
@@ -84,7 +84,7 @@ test(unaccent_long, Len == 3000) :-
     atom_codes(A, Codes),
     unaccent_atom(A, U),
     atom_length(U, Len).
-test(stem_long) :-
+test(stem_long, condition(current_prolog_flag(threads, true))) :-
     % Used to take quadratic time on sequences of y
     length(Ys, 1000000),
     maplist(=(0'y), Ys),
@@ -125,6 +125,26 @@ test(options, Expanded =:= Runtime) :-
 
 normalize(false).
 options([normalize(true)]).
+
+test(interrupt, [ condition(current_prolog_flag(threads, true)),
+                  E == time_limit_exceeded
+                ]) :-
+    % isub/4 takes cubic time; check it can be interrupted
+    length(L1, 20000),
+    length(L2, 20000),
+    maplist(=(0'a), L1),
+    rnd_abc(L2),
+    atom_codes(A, L1),
+    atom_codes(B, L2),
+    catch(call_with_time_limit(0.2, isub(A, B, _, [substring_threshold(0)])),
+          E, true).
+
+rnd_abc(L) :-
+    foldl(abc, L, 1, _).
+
+abc(C, S0, S) :-
+    C is 0'a + S0 mod 3,
+    S is (S0*7+3) mod 11.
 
 :- end_tests(isub).
 

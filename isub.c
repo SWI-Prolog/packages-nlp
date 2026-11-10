@@ -104,8 +104,14 @@ common_prefix_length(const wchar_t *s1, const wchar_t *s2)
 }
 
 
+/* isub_score_inplace() takes O(N^3) time for strings of length N.  If
+   interrupted is not NULL it is called regularly and the computation
+   is aborted, returning 0.0, if it returns non-zero.
+*/
+
 double
-isub_score_inplace(wchar_t *s1, wchar_t *s2, int options, int substring_threshold)
+isub_score_inplace(wchar_t *s1, wchar_t *s2, int options, int substring_threshold,
+		   isub_interrupt interrupted)
 { int l1, l2, L1, L2;
   double common = 0.0;
   size_t common_prefix_len;
@@ -148,6 +154,9 @@ isub_score_inplace(wchar_t *s1, wchar_t *s2, int options, int substring_threshol
 
     for (i = 0; (i < l1) && (l1 - i > best); i++)
     { j = 0;
+
+      if ( interrupted && (i%64) == 0 && (*interrupted)() )
+	return 0.0;
 
       while (l2 - j > best)
       { int k = i;
@@ -229,7 +238,7 @@ isub_score(const wchar_t *st1, const wchar_t *st2, int options, int substring_th
   wchar_t *s2 = wcsdup(st2);
   double rc;
 
-  rc = isub_score_inplace(s1, s2, options, substring_threshold);
+  rc = isub_score_inplace(s1, s2, options, substring_threshold, NULL);
   free(s1);
   free(s2);
 
