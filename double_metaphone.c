@@ -110,7 +110,7 @@ MakeUpper(metastring * s)
 
     for (i = s->str; *i; i++)
       {
-	  *i = toupper(*i);
+	  *i = (char)toupper(*i & 0xff);
       }
 }
 

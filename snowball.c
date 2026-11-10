@@ -39,6 +39,7 @@
 #include "libstemmer_c/include/libstemmer.h"
 #include <pthread.h>
 #include <string.h>
+#include <limits.h>
 #include <assert.h>
 #include <errno.h>
 
@@ -108,6 +109,8 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
   struct sb_stemmer *st;
   const char *lname;
 
+  if ( !cache )
+    return PL_resource_error("memory");
   if ( !PL_get_atom(t, &lang) )
     return PL_type_error("atom", t);
 
@@ -127,7 +130,10 @@ get_lang_stemmer(term_t t, struct sb_stemmer **stemmerp)
       return PL_domain_error("snowball_algorithm", t);
   }
 
-  s = PL_malloc(sizeof(*s));
+  if ( !(s = PL_malloc(sizeof(*s))) )
+  { sb_stemmer_delete(st);
+    return PL_resource_error("memory");
+  }
   s->language = lang;
   s->stemmer = st;
   PL_register_atom(lang);
@@ -152,6 +158,8 @@ snowball(term_t lang, term_t in, term_t out)
   if ( !PL_get_nchars(in, &len, &s,
 		      CVT_ATOM|CVT_STRING|CVT_LIST|REP_UTF8|CVT_EXCEPTION) )
     return false;
+  if ( len > INT_MAX )
+    return PL_representation_error("max_word_length");
 
   if ( !(stemmed = sb_stemmer_stem(stemmer, (const sb_symbol*)s, (int)len)) )
     return PL_resource_error("memory");
