@@ -40,7 +40,10 @@
 :- use_module(library(plunit)).
 :- autoload(library(double_metaphone),[double_metaphone/2]).
 :- autoload(library(porter_stem),
-	    [porter_stem/2,tokenize_atom/2,atom_to_stem_list/2]).
+	    [porter_stem/2,tokenize_atom/2,atom_to_stem_list/2,unaccent_atom/2]).
+:- autoload(library(lists), [append/2, append/3]).
+:- autoload(library(apply), [maplist/2]).
+:- autoload(library(time), [call_with_time_limit/2]).
 :- autoload(library(snowball)).
 % Not autoload: the goal expansion of isub/4 must be in effect while the
 % tests below are compiled.
@@ -63,6 +66,33 @@ test(tokens, [true(X==[hello, world, !])]) :-
     tokenize_atom('hello world!', X).
 test(stem_list, [true(X==[hello, world])]) :-
     atom_to_stem_list('hello worlds!', X).
+test(unaccent, X == ssssssation) :-
+    porter_stem('\u00DF\u00DF\u00DFations', X).
+test(unaccent, X == aebl) :-
+    porter_stem('\u00C6bles', X).
+test(unaccent, X == ecol) :-
+    porter_stem('\u00C9COLES', X).
+test(unaccent, X == [aebl]) :-
+    atom_to_stem_list('\u00C6bles', X).
+test(unaccent, X == 'AEbles') :-
+    unaccent_atom('\u00C6bles', X).
+test(unaccent, X == abc) :-
+    unaccent_atom(abc, X).
+test(unaccent_long, Len == 3000) :-
+    length(Codes, 1500),
+    maplist(=(0xC6), Codes),
+    atom_codes(A, Codes),
+    unaccent_atom(A, U),
+    atom_length(U, Len).
+test(stem_long) :-
+    % Used to take quadratic time on sequences of y
+    length(Ys, 1000000),
+    maplist(=(0'y), Ys),
+    append([`a`, Ys, `ing`], Codes),
+    atom_codes(A, Codes),
+    call_with_time_limit(10, porter_stem(A, S)),
+    atom_length(S, Len),
+    assertion(Len == 1000001).
 
 :- end_tests(stem).
 

@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include <limits.h>
 #include <ctype.h>
 #include <wctype.h>
 #include <wchar.h>
@@ -54,9 +56,32 @@ typedef struct vars
 
 static int
 cons(int i, vars *vs)
+{ int neg = FALSE;			/* y: cons(i) = !cons(i-1) */
+
+  for(;;)
+  { switch (vs->b[i])
+    { case 'a': case 'e': case 'i': case 'o': case 'u':
+	return neg;
+      case 'y':
+	if ( i == vs->k0 )
+	  return !neg;
+	neg = !neg;
+	i--;
+	break;
+      default:
+	return !neg;
+    }
+  }
+}
+
+/* cons_next(i, prev) is cons(i), given prev is cons(i-1).  Used to
+   compute cons() for a sequence in linear time. */
+
+static int
+cons_next(int i, int prev, vars *vs)
 { switch (vs->b[i])
   { case 'a': case 'e': case 'i': case 'o': case 'u': return FALSE;
-    case 'y': return (i==vs->k0) ? TRUE : !cons(i-1, vs);
+    case 'y': return (i==vs->k0) ? TRUE : !prev;
     default: return TRUE;
   }
 }
@@ -74,37 +99,32 @@ cons(int i, vars *vs)
 
 static int
 m(vars *vs)
-{  int n = 0;
-   int i = vs->k0;
-   while(TRUE)
-   {  if (i > vs->j) return n;
-      if (! cons(i, vs)) break;
-      i++;
-   }
-   i++;
-   while(TRUE)
-   {  while(TRUE)
-      {  if (i > vs->j) return n;
-            if (cons(i, vs)) break;
-            i++;
-      }
-      i++;
+{ int n = 0;
+  int prev = TRUE;
+
+  for(int i = vs->k0; i <= vs->j; i++)
+  { int c = cons_next(i, prev, vs);
+
+    if ( c && !prev )			/* vowel followed by consonant */
       n++;
-      while(TRUE)
-      {  if (i > vs->j) return n;
-         if (! cons(i, vs)) break;
-         i++;
-      }
-      i++;
-    }
+    prev = c;
+  }
+
+  return n;
 }
 
 /* vowelinstem() is TRUE <=> vs->k0,...vs->j contains a vowel */
 
 static int
 vowelinstem(vars *vs)
-{  int i; for (i = vs->k0; i <= vs->j; i++) if (! cons(i, vs)) return TRUE;
-   return FALSE;
+{ int prev = TRUE;
+
+  for(int i = vs->k0; i <= vs->j; i++)
+  { if ( !(prev=cons_next(i, prev, vs)) )
+      return TRUE;
+  }
+
+  return FALSE;
 }
 
 /* doublec(vs->j) is TRUE <=> vs->j,(vs->j-1) contain a double consonant. */
@@ -371,16 +391,49 @@ stem(char * p, int i, int j)
 
 /* SWI-Prolog hooks */
 
-static int unaccent(const char *in, size_t len, char *out, size_t size);
+static size_t unaccent(const char *in, size_t len,
+		       char *out, size_t size, int *changes);
+
+/* unaccent_lower() unaccents and downcases len bytes from in.  The
+   result is in buf if it fits, else in malloc'ed memory.  Returns the
+   result and its length in *lenp.
+*/
+
+static char *
+unaccent_lower(const char *in, size_t len, char *buf, size_t size,
+	       size_t *lenp)
+{ int changes;
+  size_t l = unaccent(in, len, buf, size, &changes);
+  char *s = buf;
+
+  if ( l > size )
+  { if ( !(s = malloc(l)) )
+      return NULL;
+    unaccent(in, len, s, l, &changes);
+  }
+  for(size_t i=0; i<l; i++)
+    s[i] = (char)tolower(s[i]&0xff);
+
+  *lenp = l;
+  return s;
+}
+
+/* stem_chars() stems s[0..len) in place, returning the new length.
+   Words that do not fit an int are not stemmed. */
+
+static size_t
+stem_chars(char *s, size_t len)
+{ if ( len == 0 || len > INT_MAX )
+    return len;
+
+  return (size_t)stem(s, 0, (int)(len-1)) + 1;
+}
 
 static foreign_t
 pl_stem(term_t t_in, term_t t_stem)
-{ char *word;
-  size_t len, end;
-  char *f, *t, *s, *ew;
+{ char *word, *s;
+  size_t len, l;
   char buf[1024];
-  char plain[1024];
-  long l;
   int rc;
 
   if ( !PL_get_nchars(t_in, &len, &word, CVT_ALL|CVT_EXCEPTION) )
@@ -388,31 +441,12 @@ pl_stem(term_t t_in, term_t t_stem)
       return PL_unify(t_in, t_stem);
     return FALSE;
   }
-  ew = &word[len];
-  s = len+1 > sizeof(buf) ? PL_malloc(len+1) : buf;
-  for(f=word, t=s; f<ew; )
-    *t++ = tolower(*f++);
 
-  if ( (l=unaccent(s, t-s, plain, sizeof(plain))) < (long)sizeof(plain) )
-  { if ( l >= 0 )
-    { if ( s != buf )
-	PL_free(s);
-      s = plain;
-    }
-  } else
-  { char *s2 = PL_malloc(l+1);
-    unaccent(s, t-s, s2, l+1);
-    if ( s != buf )
-      PL_free(s);
-    s = s2;
-  }
-
-  end = stem(s, 0, (int)(len - 1));
-  s[end + 1] = '\0';
-
-  rc = PL_unify_atom_chars(t_stem, s);
-  if ( s != plain && s != buf )
-    PL_free(s);
+  if ( !(s = unaccent_lower(word, len, buf, sizeof(buf), &l)) )
+    return PL_resource_error("memory");
+  rc = PL_unify_atom_nchars(t_stem, stem_chars(s, l), s);
+  if ( s != buf )
+    free(s);
 
   return rc;
 }
@@ -445,11 +479,17 @@ static char *unaccent_def[] =
 };
 
 
-static int
-unaccent(const char *in, size_t len, char *out, size_t size)
+/* unaccent() writes the unaccented version of in[0..len) to out,
+   writing at most size bytes.  Returns the length of the result, which
+   does not fit if this is more than size.  *changes is set to the
+   number of replaced characters.  The output is not 0-terminated. */
+
+static size_t
+unaccent(const char *in, size_t len, char *out, size_t size, int *changes)
 { char *to = out, *toe = &out[size];
   const char *ein = &in[len];
-  int changes = 0;
+
+  *changes = 0;
 
   for( ; in < ein; in++)
   { int c = (*in)&0xff;
@@ -460,7 +500,7 @@ unaccent(const char *in, size_t len, char *out, size_t size)
 	*to = c;
       to++;
     } else
-    { changes++;
+    { (*changes)++;
 
       while(*m)
       { if ( to < toe )
@@ -471,13 +511,7 @@ unaccent(const char *in, size_t len, char *out, size_t size)
     }
   }
 
-  if ( to < toe )
-    *to = '\0';
-
-  if ( changes == 0 )
-    return (int)(out-to);		/* no change: negative */
-
-  return (int)(to-out);
+  return (size_t)(to-out);
 }
 
 
@@ -485,24 +519,26 @@ static foreign_t
 pl_unaccent(term_t from, term_t to)
 { char buf[1024];
   char *f;
-  int len;
-  size_t fl;
+  size_t len, fl;
+  int changes;
 
   if ( !PL_get_nchars(from, &fl, &f, CVT_ALL|CVT_EXCEPTION) )
     return FALSE;
 
-  if ( (len=unaccent(f, fl, buf, sizeof(buf))) <= (int)sizeof(buf) )
-  { if ( len < 0 )			/* no change */
-      return PL_unify(to, from);
-    else
-      return PL_unify_atom_nchars(to, len, buf);
+  len = unaccent(f, fl, buf, sizeof(buf), &changes);
+  if ( changes == 0 )
+  { return PL_unify(to, from);
+  } else if ( len <= sizeof(buf) )
+  { return PL_unify_atom_nchars(to, len, buf);
   } else
-  { char *t = PL_malloc(len+1);
+  { char *t = malloc(len);
     int rc;
 
-    unaccent(f, fl, t, len+1);
+    if ( !t )
+      return PL_resource_error("memory");
+    unaccent(f, fl, t, len, &changes);
     rc = PL_unify_atom_nchars(to, len, t);
-    PL_free(t);
+    free(t);
     return rc;
   }
 }
@@ -796,27 +832,15 @@ unify_stem(const char *s, size_t len, toktype type, void *closure)
 
   if ( PL_unify_list(list->tail, list->head, list->tail) )
   { char tmp[1024];
-    char *buf = tmp;
-    char *q;
-    int i, rc, end, l;
+    char *buf;
+    size_t l;
+    int rc;
 
-					/* unaccent */
-    l = abs(unaccent(s, len, buf, sizeof(tmp)));
-    if ( l > (int)sizeof(buf) )
-    { buf = PL_malloc(l+1);
-      unaccent(s, len, buf, l+1);
-    }
-
-					/* downcase */
-    for(q=buf, i=0; i++ < l; q++)
-      *q = tolower(*q);
-
-    end = stem(buf, 0, l-1);
-    buf[++end] = '\0';
-
-    rc = PL_unify_atom_nchars(list->head, end, buf);
+    if ( !(buf = unaccent_lower(s, len, tmp, sizeof(tmp), &l)) )
+      return PL_resource_error("memory");
+    rc = PL_unify_atom_nchars(list->head, stem_chars(buf, l), buf);
     if ( buf != tmp )
-      PL_free(buf);
+      free(buf);
 
     return rc;
   }
