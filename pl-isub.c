@@ -45,7 +45,7 @@ isub_score_inplace() modifies the contents.  That is why we use
 
 #define FAST_SIZE 64
 
-static int
+static bool
 get_chars(term_t t, wchar_t **sb, wchar_t *buf)
 { wchar_t *s;
   size_t len;

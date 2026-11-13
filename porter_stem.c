@@ -54,7 +54,7 @@ typedef struct vars
 
 /* cons(i) is true <=> vs->b[i] is a consonant. */
 
-static int
+static bool
 cons(int i, vars *vs)
 { int neg = false;			/* y: cons(i) = !cons(i-1) */
 
@@ -115,7 +115,7 @@ m(vars *vs)
 
 /* vowelinstem() is true <=> vs->k0,...vs->j contains a vowel */
 
-static int
+static bool
 vowelinstem(vars *vs)
 { int prev = true;
 
@@ -129,7 +129,7 @@ vowelinstem(vars *vs)
 
 /* doublec(vs->j) is true <=> vs->j,(vs->j-1) contain a double consonant. */
 
-static int
+static bool
 doublec(int j, vars *vs)
 {  if (j < vs->k0+1) return false;
    if (vs->b[j] != vs->b[j-1]) return false;
@@ -145,7 +145,7 @@ doublec(int j, vars *vs)
 
 */
 
-static int
+static bool
 cvc(int i, vars *vs)
 {  if (i < vs->k0+2 || !cons(i, vs) || cons(i-1, vs) || !cons(i-2, vs))
      return false;
@@ -157,7 +157,7 @@ cvc(int i, vars *vs)
 
 /* ends(s) is true <=> vs->k0,...vs->k ends with the string s. */
 
-static int
+static bool
 ends(char * s, vars *vs)
 {  int length = s[0];
    if (s[length] != vs->b[vs->k]) return false; /* tiny speed-up */
@@ -560,7 +560,7 @@ typedef enum
 #define issign(c) ((c) == '-' || (c) == '+' )
 #define isdigit(c) ((c) >= '0' && (c) <= '9')
 
-static int
+static bool
 tokenizeA(const char *in, size_t len,
 	  int (*call)(const char *s,
 		      size_t len,
@@ -632,7 +632,7 @@ tokenizeA(const char *in, size_t len,
 }
 
 
-static int
+static bool
 tokenizeW(const wchar_t *in, size_t len,
 	  int (*call)(const wchar_t *s,
 		      size_t len,
