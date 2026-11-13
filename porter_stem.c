@@ -52,11 +52,11 @@ typedef struct vars
   int   k, k0, j;	/* j is a general offset into the string */
 } vars;
 
-/* cons(i) is TRUE <=> vs->b[i] is a consonant. */
+/* cons(i) is true <=> vs->b[i] is a consonant. */
 
 static int
 cons(int i, vars *vs)
-{ int neg = FALSE;			/* y: cons(i) = !cons(i-1) */
+{ int neg = false;			/* y: cons(i) = !cons(i-1) */
 
   for(;;)
   { switch (vs->b[i])
@@ -80,9 +80,9 @@ cons(int i, vars *vs)
 static int
 cons_next(int i, int prev, vars *vs)
 { switch (vs->b[i])
-  { case 'a': case 'e': case 'i': case 'o': case 'u': return FALSE;
-    case 'y': return (i==vs->k0) ? TRUE : !prev;
-    default: return TRUE;
+  { case 'a': case 'e': case 'i': case 'o': case 'u': return false;
+    case 'y': return (i==vs->k0) ? true : !prev;
+    default: return true;
   }
 }
 
@@ -100,7 +100,7 @@ cons_next(int i, int prev, vars *vs)
 static int
 m(vars *vs)
 { int n = 0;
-  int prev = TRUE;
+  int prev = true;
 
   for(int i = vs->k0; i <= vs->j; i++)
   { int c = cons_next(i, prev, vs);
@@ -113,30 +113,30 @@ m(vars *vs)
   return n;
 }
 
-/* vowelinstem() is TRUE <=> vs->k0,...vs->j contains a vowel */
+/* vowelinstem() is true <=> vs->k0,...vs->j contains a vowel */
 
 static int
 vowelinstem(vars *vs)
-{ int prev = TRUE;
+{ int prev = true;
 
   for(int i = vs->k0; i <= vs->j; i++)
   { if ( !(prev=cons_next(i, prev, vs)) )
-      return TRUE;
+      return true;
   }
 
-  return FALSE;
+  return false;
 }
 
-/* doublec(vs->j) is TRUE <=> vs->j,(vs->j-1) contain a double consonant. */
+/* doublec(vs->j) is true <=> vs->j,(vs->j-1) contain a double consonant. */
 
 static int
 doublec(int j, vars *vs)
-{  if (j < vs->k0+1) return FALSE;
-   if (vs->b[j] != vs->b[j-1]) return FALSE;
+{  if (j < vs->k0+1) return false;
+   if (vs->b[j] != vs->b[j-1]) return false;
    return cons(j, vs);
 }
 
-/* cvc(i) is TRUE <=> i-2,i-1,i has the form consonant - vowel - consonant
+/* cvc(i) is true <=> i-2,i-1,i has the form consonant - vowel - consonant
    and also if the second c is not w,x or y. this is used when trying to
    restore an e at the end of a short word. e.g.
 
@@ -148,23 +148,23 @@ doublec(int j, vars *vs)
 static int
 cvc(int i, vars *vs)
 {  if (i < vs->k0+2 || !cons(i, vs) || cons(i-1, vs) || !cons(i-2, vs))
-     return FALSE;
+     return false;
    {  int ch = vs->b[i];
-      if (ch == 'w' || ch == 'x' || ch == 'y') return FALSE;
+      if (ch == 'w' || ch == 'x' || ch == 'y') return false;
    }
-   return TRUE;
+   return true;
 }
 
-/* ends(s) is TRUE <=> vs->k0,...vs->k ends with the string s. */
+/* ends(s) is true <=> vs->k0,...vs->k ends with the string s. */
 
 static int
 ends(char * s, vars *vs)
 {  int length = s[0];
-   if (s[length] != vs->b[vs->k]) return FALSE; /* tiny speed-up */
-   if (length > vs->k-vs->k0+1) return FALSE;
-   if (memcmp(vs->b+vs->k-length+1,s+1,length) != 0) return FALSE;
+   if (s[length] != vs->b[vs->k]) return false; /* tiny speed-up */
+   if (length > vs->k-vs->k0+1) return false;
+   if (memcmp(vs->b+vs->k-length+1,s+1,length) != 0) return false;
    vs->j = vs->k-length;
-   return TRUE;
+   return true;
 }
 
 /* setto(s) sets (vs->j+1),...vs->k to the characters in the string s, readjusting
@@ -439,7 +439,7 @@ pl_stem(term_t t_in, term_t t_stem)
   if ( !PL_get_nchars(t_in, &len, &word, CVT_ALL|CVT_EXCEPTION) )
   { if ( PL_is_number(t_in) )
       return PL_unify(t_in, t_stem);
-    return FALSE;
+    return false;
   }
 
   if ( !(s = unaccent_lower(word, len, buf, sizeof(buf), &l)) )
@@ -523,7 +523,7 @@ pl_unaccent(term_t from, term_t to)
   int changes;
 
   if ( !PL_get_nchars(from, &fl, &f, CVT_ALL|CVT_EXCEPTION) )
-    return FALSE;
+    return false;
 
   len = unaccent(f, fl, buf, sizeof(buf), &changes);
   if ( changes == 0 )
@@ -610,25 +610,25 @@ tokenizeA(const char *in, size_t len,
 
       if ( !(*call)((const char*)st, s-st, type, closure) )
       { if ( PL_exception(0) )
-	  return FALSE;
+	  return false;
 	while(s<se && iswalnum(*s))
 	  s++;
 	if ( !(*call)((const char*)st, s-st, TOK_WORD, closure) )
-	  return FALSE;
+	  return false;
       }
     } else if ( iswalnum(*s) )
     { while(s<se && iswalnum(*s))
 	s++;
       if ( !(*call)((const char*)st, s-st, TOK_WORD, closure) )
-	return FALSE;
+	return false;
     } else
     { s++;
       if ( !(*call)((const char*)st, 1, TOK_PUNCT, closure) )
-	return FALSE;
+	return false;
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 
@@ -682,26 +682,26 @@ tokenizeW(const wchar_t *in, size_t len,
 
       if ( !(*call)((const wchar_t*)st, s-st, type, closure) )
       { if ( PL_exception(0) )
-	  return FALSE;
+	  return false;
 	while(s<se && iswalnum(*s))
 	  s++;
 	if ( !(*call)((const wchar_t*)st, s-st, TOK_WORD, closure) )
-	  return FALSE;
+	  return false;
       }
 
     } else if ( iswalnum(*s) )
     { while(s<se && iswalnum(*s))
 	s++;
       if ( !(*call)((const wchar_t*)st, s-st, TOK_WORD, closure) )
-	return FALSE;
+	return false;
     } else
     { s++;
       if ( !(*call)((const wchar_t*)st, 1, TOK_PUNCT, closure) )
-	return FALSE;
+	return false;
     }
   }
 
-  return TRUE;
+  return true;
 }
 
 
@@ -744,7 +744,7 @@ unify_tokenA(const char *s, size_t len, toktype type, void *closure)
     }
     default:
       if ( !PL_put_atom_nchars(l->tmp, len, s) )
-	return FALSE;
+	return false;
     break;
   }
 
@@ -787,7 +787,7 @@ unify_tokenW(const wchar_t *s, size_t len, toktype type, void *closure)
     default:
       if ( !PL_put_variable(l->tmp) ||
 	   !PL_unify_wchars(l->tmp, PL_ATOM, len, s) )
-	return FALSE;
+	return false;
       break;
   }
 
@@ -810,12 +810,12 @@ pl_tokenize(term_t text, term_t tokens)
 
   if ( PL_get_nchars(text, &len, &s, CVT_ALL) )
   { if ( !tokenizeA(s, len, unify_tokenA, &l) )
-      return FALSE;
+      return false;
   } else if ( PL_get_wchars(text, &len, &ws, CVT_ALL|CVT_EXCEPTION) )
   { if ( !tokenizeW(ws, len, unify_tokenW, &l) )
-      return FALSE;
+      return false;
   } else
-    return FALSE;
+    return false;
 
   return PL_unify_nil(l.tail);
 }
@@ -826,7 +826,7 @@ unify_stem(const char *s, size_t len, toktype type, void *closure)
 { list *list = closure;
 
   if ( type == TOK_PUNCT )
-    return TRUE;
+    return true;
   if ( type == TOK_INT || type == TOK_FLOAT )
     return unify_tokenA(s, len, type, closure);
 
@@ -845,7 +845,7 @@ unify_stem(const char *s, size_t len, toktype type, void *closure)
     return rc;
   }
 
-  return FALSE;
+  return false;
 }
 
 
@@ -857,14 +857,14 @@ pl_atom_to_stem_list(term_t text, term_t stems)
   list l;
 
   if ( !PL_get_nchars(text, &len, &s, CVT_ALL) )
-    return FALSE;
+    return false;
 
   l.tail = PL_copy_term_ref(stems);
   l.head = PL_new_term_ref();
   l.tmp  = PL_new_term_ref();
 
   if ( !tokenizeA(s, len, unify_stem, &l) )
-    return FALSE;
+    return false;
 
   return PL_unify_nil(l.tail);
 }

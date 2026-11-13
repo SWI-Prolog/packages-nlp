@@ -55,13 +55,13 @@ get_chars(term_t t, wchar_t **sb, wchar_t *buf)
     { *sb = wcscpy(buf, s);
     } else
     { if ( !(*sb = wcsdup(s)) )
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
   }
 
-  return FALSE;
+  return false;
 }
 
 
@@ -84,7 +84,7 @@ pl_isub(term_t t1, term_t t2, term_t tsim, term_t toptions, term_t tsubstring_th
        !get_chars(t2, &s2, buf2) ||
        !PL_get_integer_ex(tsubstring_threshold, &substring_threshold) ||
        !PL_get_integer_ex(toptions, &options) )
-  { rc = FALSE;
+  { rc = false;
     goto out;
   }
 
@@ -92,7 +92,7 @@ pl_isub(term_t t1, term_t t2, term_t tsim, term_t toptions, term_t tsubstring_th
 				    isub_interrupted);
 
     if ( PL_exception(0) )
-      rc = FALSE;
+      rc = false;
     else
       rc = PL_unify_float(tsim, sim);
   }
