@@ -836,6 +836,7 @@ unify_stem(const char *s, size_t len, toktype type, void *closure)
     size_t l;
     int rc;
 
+    tmp[0] = '\0';			/* silence -Wmaybe-uninitialized */
     if ( !(buf = unaccent_lower(s, len, tmp, sizeof(tmp), &l)) )
       return PL_resource_error("memory");
     rc = PL_unify_atom_nchars(list->head, stem_chars(buf, l), buf);
