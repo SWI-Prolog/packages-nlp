@@ -486,7 +486,7 @@ static char *unaccent_def[] =
 
 static size_t
 unaccent(const char *in, size_t len, char *out, size_t size, int *changes)
-{ char *to = out, *toe = &out[size];
+{ size_t o = 0;		/* not a pointer: may pass the end of out */
   const char *ein = &in[len];
 
   *changes = 0;
@@ -496,22 +496,22 @@ unaccent(const char *in, size_t len, char *out, size_t size, int *changes)
     char *m;
 
     if ( c < 192 || !(m=unaccent_def[c-192]) )
-    { if ( to < toe )
-	*to = c;
-      to++;
+    { if ( o < size )
+	out[o] = c;
+      o++;
     } else
     { (*changes)++;
 
       while(*m)
-      { if ( to < toe )
-	  *to = *m;
-	to++;
+      { if ( o < size )
+	  out[o] = *m;
+	o++;
 	m++;
       }
     }
   }
 
-  return (size_t)(to-out);
+  return o;
 }
 
 
